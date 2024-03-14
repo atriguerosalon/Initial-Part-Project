@@ -20,9 +20,22 @@ ct_field_star = ct_field_star.T
 phi = phi.T
 
 # Apply Gaussian filter to the fields
-wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=1)
-ct_field_filtered = gaussian_filter(ct_field_star, sigma=1)
-phi_filtered = gaussian_filter(phi, sigma=1)
+def apply_gaussian(sigma, exclude_boundaries):
+    data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
+    data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
+
+    wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
+
+    wcr_field_star = wcr_field_star.T
+    ct_field_star = ct_field_star.T
+    phi = phi.T
+
+    wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma)
+    ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma)
+    phi_filtered = gaussian_filter(phi, sigma=sigma)
+
+    return wcr_field_filtered, ct_field_filtered, phi_filtered
+
 
 for sigma in sigma_steps:
     # Apply Gaussian filter to the wcr_field
