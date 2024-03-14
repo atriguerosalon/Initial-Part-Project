@@ -1,15 +1,11 @@
-# library
 import numpy as np
 import matplotlib.pyplot as plt
-from google.colab import drive
 from sklearn.metrics import mean_squared_error
 import mpl_scatter_density # adds projection='scatter_density'
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
-drive.mount('/content/drive')
-plt.rcParams.update(plt.rcParamsDefault)
+from gaussian_filter_apply import apply_gaussian
 
 # spatial constants
 nx, ny = 384, 384
@@ -18,13 +14,9 @@ dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
 
-# flame related constants
-TU = 1500.000 #K
-TB = 1623.47 #K
-
 # data load
-data_path = '/content/drive/My Drive/RawData/wtemp-slice-B1-0000080000.raw'
-data = np.fromfile( data_path, count=-1, dtype=np.float64).reshape(nx,ny)
+wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 5)
+# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add results from NN
 
 # data plot
 plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
@@ -38,10 +30,6 @@ print(DNS)
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
 
-
-# data load
-data_path1 = '/content/drive/My Drive/RawData/nablatemp-slice-B1-0000080000.raw'
-data1 = np.fromfile( data_path1, count=-1, dtype=np.float64).reshape(nx,ny)
 
 # data plot
 plt.pcolor(x, y, np.moveaxis(data1, (0,1), (1,0)), cmap = 'hot')
