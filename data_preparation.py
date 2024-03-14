@@ -87,12 +87,9 @@ def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
 
 if __name__ == '__main__':
     # Usage of functions
-    exclude_boundaries = 5
+    exclude_boundary = 5
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
-    wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=0)
+    wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
     # plot_fields(wcr_field_star, ct_field_star, phi)  # Uncomment to plot fields
-
-
-
     overlay_fields(phi, 'figs/figure7.png', x, y)  # Adjust 'figure7.png' to your image's path
