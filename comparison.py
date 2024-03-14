@@ -16,7 +16,7 @@ y = np.arange(0,ly+dy,dy)
 
 # data load
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 5)
-# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add
+# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add results from NN
 
 # data plot
 plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
