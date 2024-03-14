@@ -16,6 +16,13 @@ print(f'size of wcr_field_star: {wcr_field_star.shape}')
 
 #Now rotate around the y=x axis
 wcr_field_star = wcr_field_star.T
+ct_field_star = ct_field_star.T
+phi = phi.T
+
+# Apply Gaussian filter to the fields
+wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=1)
+ct_field_filtered = gaussian_filter(ct_field_star, sigma=1)
+phi_filtered = gaussian_filter(phi, sigma=1)
 
 for sigma in sigma_steps:
     # Apply Gaussian filter to the wcr_field
