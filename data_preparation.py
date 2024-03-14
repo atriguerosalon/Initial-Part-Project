@@ -93,7 +93,6 @@ if __name__ == '__main__':
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=0)
     # plot_fields(wcr_field_star, ct_field_star, phi)  # Uncomment to plot fields
 
-    # Plot phi field
 
 
     overlay_fields(phi, 'figs/figure7.png', x, y)  # Adjust 'figure7.png' to your image's path
