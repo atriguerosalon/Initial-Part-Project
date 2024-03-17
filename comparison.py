@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
-import mpl_scatter_density # adds projection='scatter_density'
+#import mpl_scatter_density # adds projection='scatter_density'
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -18,6 +18,7 @@ y = np.arange(0,ly+dy,dy)
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 5)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add results from NN
 
+#DATA IS NOT DEFINED?
 # data plot
 plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
@@ -48,7 +49,7 @@ plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
 plt.colorbar()
 plt.show()
 
-
+#Why are we creating a colormap? If anything, might want to use data_preparation.create_custom_cmap()
 hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
     (1e-20, '#4B006E'),
