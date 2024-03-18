@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import os
 
 
 # Define the standard deviation for the Gaussian filter
@@ -34,30 +34,30 @@ phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
 white_jet = create_custom_cmap()
 
 # Create subplots
-fig, axs = plt.subplots(2, 3, figsize=(18, 10))  # Adjust the figure size as needed
+fig, axs = plt.subplots(2, 3, figsize=(10, 6))  # Adjust the figure size as needed
 
 # Set common extent for all plots
 extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
 
 # Plotting the original fields
 axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
-axs[0, 0].set_title('(a) ωcT*')
+#axs[0, 0].set_title('(a) ωcT*')
 
 axs[0, 1].imshow(ct_field_star, cmap=white_jet, extent=extent_mm)
-axs[0, 1].set_title('(b) |∇cT|*')
+#axs[0, 1].set_title('(b) |∇cT|*')
 
 axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
-axs[0, 2].set_title('(c) Φres')
+#axs[0, 2].set_title('(c) Φres')
 
 # Plotting the filtered fields
 axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm)
-axs[1, 0].set_title('(d) ωcT* filtered')
+#axs[1, 0].set_title('(d) ωcT* filtered')
 
 axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm)
-axs[1, 1].set_title('(e) |∇cT|* filtered')
+#axs[1, 1].set_title('(e) |∇cT|* filtered')
 
 axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm)
-axs[1, 2].set_title('(f) Φres filtered')
+#axs[1, 2].set_title('(f) Φres filtered')
 
 # Set the labels and titles as per your requirement
 for ax in axs.flat:
@@ -67,21 +67,23 @@ for ax in axs.flat:
 for ax in axs.flat:
     ax.label_outer()
 
-# Adjust layout to create space for the colorbar
-fig.subplots_adjust(right=0.8)
+# Adjust the subplots to make space for the colorbar
+fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.1)
 
-# Create an axis for the colorbar on the right side of the figure
-cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+# Add the colorbar to the right of the subplots
+cbar_ax = fig.add_axes([0.87, 0.068, 0.025, 0.88])
 
-# Plot one of the images to use for the colorbar
-# Since all images have the same colormap, it doesn't matter which one we choose
+# Choose any image for creating the colorbar since all images use the same colormap and range
 im = axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
 
 # Create the colorbar
-cbar = fig.colorbar(im, cax=cbar_ax)
+fig.colorbar(im, cax=cbar_ax)
 
 # Set colorbar label
-cbar.set_label('Normalized Value', rotation=270, labelpad=15)
+#cbar_ax.set_ylabel('Normalized Value', rotation=270, labelpad=20)
 
-plt.tight_layout()
+#Save figure as pdf
+if not os.path.exists('figs'):
+    os.makedirs('figs')
+plt.savefig('figs/' + f'Unfiltered_Filtered_plots_sigma_{sigma_value}_new.pdf', dpi=300)
 plt.show()
