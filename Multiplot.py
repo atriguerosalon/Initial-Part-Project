@@ -4,11 +4,17 @@ from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
+from matplotlib import rc
 
+# Enable LaTeX text rendering
+#rc('text', usetex=True)
+#rc('font', family='serif')
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'STIXGeneral'
 
 # Define the standard deviation for the Gaussian filter
 exclude_boundary = 4
-sigma_value = 5  # Example sigma value for Gaussian filter, adjust as needed
+sigma_value = 15  # Example sigma value for Gaussian filter, adjust as needed
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
@@ -61,7 +67,9 @@ axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm)
 
 # Set the labels and titles as per your requirement
 for ax in axs.flat:
-    ax.set(xlabel='x (mm)', ylabel='y (mm)')
+    #x and y in latex format font
+    ax.set_xlabel(r'$x$ (mm)', fontsize=15)
+    ax.set_ylabel(r'$y$ (mm)', fontsize=15)
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 for ax in axs.flat:
@@ -71,7 +79,7 @@ for ax in axs.flat:
 fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.1)
 
 # Add the colorbar to the right of the subplots
-cbar_ax = fig.add_axes([0.87, 0.068, 0.025, 0.88])
+cbar_ax = fig.add_axes([0.87, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
 im = axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
