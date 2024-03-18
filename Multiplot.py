@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
-from matplotlib import rc
 
 # Enable LaTeX text rendering
 #rc('text', usetex=True)
@@ -73,7 +71,9 @@ for ax in axs.flat:
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 for ax in axs.flat:
+    ax.tick_params(axis='both', which='major', labelsize=12)
     ax.label_outer()
+
 
 # Adjust the subplots to make space for the colorbar
 fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.1)
@@ -82,7 +82,7 @@ fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hs
 cbar_ax = fig.add_axes([0.87, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
-im = axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
+im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
 
 # Create the colorbar
 fig.colorbar(im, cax=cbar_ax)
