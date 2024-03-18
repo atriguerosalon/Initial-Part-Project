@@ -19,12 +19,7 @@ exclude_boundaries = 5
 # data load
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, exclude_boundaries)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
-
-# Data Analysis
-NN=np.empty(1)
-DNS=
-if len(NN)!=len(DNS):
-  print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
+phi_NN = np.load('Phi_NN.npy')
 
 '''
 wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
@@ -63,21 +58,22 @@ filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 def calculate_MSE(filter_size):
   beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
-  boop = [val for sublist in NN(filter_size) for val in sublist]
+  boop = [val for sublist in phi_NN for val in sublist]
   MSE = mean_squared_error(beep, boop)
   return MSE
 
 def calculate_pearson_r(filter_size):
   beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
-  boop = [val for sublist in NN(filter_size) for val in sublist]
+  boop = [val for sublist in phi_NN for val in sublist]
   pearson_r = sp.stats.pearsonr(beep, boop)
   return pearson_r
 
-MSE_vals=map(calculate_MSE(), filter_sizes)
-pearson_r_vals=map(calculate_pearson_r(), filter_sizes)
+MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
+pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
 
 # Plot MSE
-# ...
+plt.plot(filter_sizes, MSE_vals)
+plt.show()
 
 # Plot Pearson R
 plt.plot(filter_sizes, pearson_r_vals)
