@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
+import matplotlib.colors as mcolors
 
 # Constants
 #LOOK INTO MAKING THSE AS INPUT VARIABLES IN THE FUTURE!!!
@@ -51,6 +52,15 @@ def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=0):
     phi = calculate_phi(wcr_field_star, ct_field_star)
     return wcr_field_star, ct_field_star, phi
 
+def create_custom_cmap():
+    jet = plt.cm.get_cmap('jet', 256)
+
+    # Modify the colormap to set values below 0.2 to white
+    newcolors = jet(np.linspace(0, 1, 256))
+    newcolors[:int(256*0.2), :] = np.array([1, 1, 1, 1])  # RGBA for white color
+    new_jet = mcolors.LinearSegmentedColormap.from_list('white_jet', newcolors)
+    return new_jet
+
 def plot_fields(wcr_field_star, ct_field_star, phi):
     fig, ax = plt.subplots(1, 3, figsize=(15, 5))
     ax[0].imshow(wcr_field_star)
@@ -64,7 +74,7 @@ def plot_fields(wcr_field_star, ct_field_star, phi):
 def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
     # Load the reference image
     img = mpimg.imread(img_path)
-    
+    white_jet = create_custom_cmap()
     phi_flipped = np.fliplr(phi)
 
     # Transpose the data if it is rotated 90 degrees
@@ -72,9 +82,10 @@ def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
     
     # Plot reference image
     fig, ax = plt.subplots()
-    ax.imshow(img, extent=[x.min(), x.max(), y.min(), y.max()])
+    ax.imshow(phi_flipped, extent=[x.min(), x.max(), y.min(), y.max()], alpha=1, cmap=white_jet, aspect='auto')
     # Overlay the phi field with transparency
-    cax = ax.imshow(phi_flipped, extent=[x.min(), x.max(), y.min(), y.max()], alpha=0.7, cmap='jet', aspect='auto')
+    cax = ax.imshow(img, extent=[x.min(), x.max(), y.min(), y.max()], alpha= 0.7)
+
     # Adding a colorbar for the overlay
     fig.colorbar(cax, ax=ax, orientation='vertical')
 
@@ -87,7 +98,7 @@ def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
 
 if __name__ == '__main__':
     # Usage of functions
-    exclude_boundary = 5
+    exclude_boundary = 0
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
