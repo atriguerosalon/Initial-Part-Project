@@ -17,23 +17,13 @@ y = np.arange(0,ly+dy,dy)
 exclude_boundaries = 5
 
 # data load
-wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, exclude_boundaries)
-# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
-phi_NN_0.25 = np.load('Phi_NN_0.25.npy')
-phi_NN_0.5 = np.load('Phi_NN_0.5.npy')
-phi_NN_0.75 = np.load('Phi_NN_0.75.npy')
-phi_NN_1.0 = np.load('Phi_NN_1.0.npy')
-phi_NN_1.25 = np.load('Phi_NN_1.25.npy')
-phi_NN_1.5 = np.load('Phi_NN_1.5.npy')
-phi_NN_1.75 = np.load('Phi_NN_1.75.npy')
-phi_NN_2.0 = np.load('Phi_NN_2.0.npy')
+def phi_field_res(filter_size):
+  phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
+  return phi_res
 
-'''
-wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
-plt.pcolor(x, y, np.moveaxis(wronk_chad, (0,1), (1,0)), cmap ='hot')
-plt.colorbar()
-plt.show()
-'''
+def phi_field_NN(filter_size):
+  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
+  return phi_NN
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
@@ -46,19 +36,20 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
     (1, '#D22B2B'),
 ], N=256)
 
+def scatter_plot_run(filter_size):
+  fig = plt.figure()
+  ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
+  density = ax.scatter_density(phi_field_res(filter_size), phi_field_NN(filter_size), cmap=hot)
+  plt.plot([0,250000], [0,250000], linestyle='--', marker='', c='black', lw=0.8)
+  plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
+  plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
+  plt.ylim((0,250000))
+  plt.xlim((0,250000))
+  cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
+  fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
+  plt.show()
+scatter_plot_run(1.0)
 
-'''
-fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
-density = ax.scatter_density(wcr_field_res, wcr_field_NN, cmap=hot)
-plt.plot([0,250000], [0,250000], linestyle='--', marker='', c='black', lw=0.8)
-plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
-plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
-plt.ylim((0,250000))
-plt.xlim((0,250000))
-cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
-fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
-plt.show()
 '''
 
 filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
@@ -102,3 +93,4 @@ plt.show()
 plt.pcolor(x, y, np.moveaxis(wcr_field_res, (0,1), (1,0)), cmap='hot')
 plt.colorbar()
 plt.show()
+'''

@@ -60,6 +60,3 @@ def run_apply_gaussian():
         #Save figure as pdf with sigma value on the filename
         #plt.savefig(f'wcr_field_filtered_sigma_{sigma}.pdf')
 
-
-
-run_apply_gaussian()
