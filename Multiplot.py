@@ -91,7 +91,7 @@ fig.colorbar(im, cax=cbar_ax)
 #cbar_ax.set_ylabel('Normalized Value', rotation=270, labelpad=20)
 
 #Save figure as pdf
-if not os.path.exists('figs'):
-    os.makedirs('figs')
-plt.savefig('figs/' + f'Unfiltered_Filtered_plots_sigma_{sigma_value}_new.pdf', dpi=300)
+if not os.path.exists('final_figs'):
+    os.makedirs('final_figs')
+plt.savefig('final_figs/' + f'Unfiltered_Filtered_plots_sigma_{sigma_value}_new.pdf', dpi=300)
 plt.show()

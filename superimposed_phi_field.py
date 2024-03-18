@@ -9,6 +9,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # Constants and function definitions as provided earlier ...
 
 if __name__ == '__main__':
+    plt.rcParams['mathtext.fontset'] = 'stix'
+    plt.rcParams['font.family'] = 'STIXGeneral'
     exclude_boundary = 5
     sigma_value = 5  # Adjust sigma value for Gaussian filter as needed
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
@@ -33,15 +35,14 @@ if __name__ == '__main__':
     im = ax.imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
     #ax.set_title('Reaction Rate Field with Phi Contour')
     #Set label font size
-    ax.set_xlabel('x (mm)', fontsize=15)
-    ax.set_ylabel('y (mm)', fontsize=15)
-
+    ax.set_xlabel('$x$ (mm)', fontsize=15)
+    ax.set_ylabel('$y$ (mm)', fontsize=15)
     # Overlay the black contour of the phi field (not the filtered one)
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
     ax.contour(phi, levels=[0], colors='black', extent=extent_mm)
 
     #Change font of the numbers on the axes
-    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.tick_params(axis='both', which='major', labelsize=15)
 
     # Create a new axes on the right which will be used for the colorbar
     divider = make_axes_locatable(ax)
@@ -54,8 +55,11 @@ if __name__ == '__main__':
     #Color bar "Phi res" in greek letters
     #cbar.set_label('$\u03A6_{res}$', fontsize=15)
 
+    # Save the figure
+    if not os.path.exists('final_figs'):
+        os.makedirs('final_figs')
+    plt.savefig('final_figs/phi_contour.pdf', dpi=300, bbox_inches='tight')
     plt.tight_layout()
     plt.show()
 
-#Print "Phi (capital) res" in greek letters
     
