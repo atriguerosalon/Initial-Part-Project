@@ -19,7 +19,6 @@ y = np.arange(0,ly+dy,dy)
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 0)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
 
-
 # Data Analysis
 NN=np.empty(1)
 DNS=np.empty(1)
@@ -29,7 +28,7 @@ if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
 
 wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
-plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
+plt.pcolor(x, y, np.moveaxis(wronk_chad, (0,1), (1,0)), cmap ='hot')
 plt.colorbar()
 plt.show()
 
@@ -82,17 +81,19 @@ plt.plot(filter_sizes, MSE_vals)
 plt.plot(filter_sizes, pearson_r_vals)
 plt.show()
 
-# data plot
+# reaction rate plot NN
 plt.pcolor(x, y, np.moveaxis(wcr_field_NN, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
 plt.show()
 
+# erro plot
 sexy='hot'
-error=np.subtract(wcr_field_res,wcr_field_NN)
-plt.pcolor(x, y, np.moveaxis(error, (0,1), (1,0)), cmap =sexy)
+wronk=np.subtract(wcr_field_res,wcr_field_NN)
+plt.pcolor(x, y, np.moveaxis(wronk, (0,1), (1,0)), cmap =sexy)
 plt.colorbar()
 plt.show()
 
 # data plot
-plt.pcolor(x, y, np.moveaxis(wcr_field_res, (0,1), (1,0)), cmap = 'hot')
+plt.pcolor(x, y, np.moveaxis(wcr_field_res, (0,1), (1,0)), cmap='hot')
 plt.colorbar()
+plt.show()
