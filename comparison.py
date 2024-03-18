@@ -77,12 +77,25 @@ plt.show()
 
 filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
-beep = [val for sublist in data for val in sublist]
-boop = [val for sublist in data1 for val in sublist]
+def calculate_MSE(filter_size):
+  beep = [val for sublist in DNS(filter_size) for val in sublist]
+  boop = [val for sublist in NN(filter_size) for val in sublist]
+  MSE = mean_squared_error(beep, boop)
+  return MSE
 
+def calculate_pearson_r(filter_size):
+  beep = [val for sublist in DNS(filter_size) for val in sublist]
+  boop = [val for sublist in NN(filter_size) for val in sublist]
+  pearson_r = sp.stats.pearsonr(beep, boop)
+  return pearson_r
 
-MSE = mean_squared_error(beep, boop)
-print(MSE)
+MSE_vals=map(calculate_MSE(), filter_sizes)
+pearson_r_vals=map(calculate_pearson_r(), filter_sizes)
 
-pearson_r = sp.stats.pearsonr(beep, boop)
-print(pearson_r.statistic**2)
+#temp
+plt.plot(filter_sizes, MSE_vals)
+plt.xlabel()
+plt.plot(filter_sizes, pearson_r_vals)
+plt.show()
+
+#
