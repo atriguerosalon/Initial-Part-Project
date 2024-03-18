@@ -9,12 +9,12 @@ from gaussian_filter_apply import apply_gaussian
 #import NN from data_preparation
 #import DNS
 # spatial constants
-nx, ny = 384, 384
+exclude_boundaries = 0
+nx, ny = 384-2*exclude_boundaries, 384-2*exclude_boundaries
 lx, ly = 0.01, 0.01 #[m]
 dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
-exclude_boundaries = 5
 
 # data load
 def phi_field_res(filter_size):
@@ -36,6 +36,15 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
     (1, '#D22B2B'),
 ], N=256)
 
+plt.subplot(1,2,1)
+plt.pcolor(x,y, phi_field_NN(1.0))
+plt.subplot(1,2,2)
+plt.pcolor(x,y, phi_field_res(1.0))
+plt.colorbar()
+plt.show()
+
+
+
 def scatter_plot_run(filter_size):
   fig = plt.figure()
   ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
@@ -43,8 +52,6 @@ def scatter_plot_run(filter_size):
   plt.plot([0,250000], [0,250000], linestyle='--', marker='', c='black', lw=0.8)
   plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
   plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
-  plt.ylim((0,250000))
-  plt.xlim((0,250000))
   cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
   fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
   plt.show()
