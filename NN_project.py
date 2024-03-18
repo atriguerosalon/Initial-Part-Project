@@ -53,7 +53,7 @@ data_3 = data_3 / (2.0 * DTH)
 X = np.stack((data_1_filtered.flatten(), data_2_filtered.flatten(), data_3.flatten()), axis=1)
 
 # Model load
-model = load_model('phi_nn_epoch_00240.h5')
+model = load_model('phi_nn_epoch_00240.h5', compile=False)
 
 # Prediction
 phi_nn = model.predict(X, batch_size=16, verbose=2)
