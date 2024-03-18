@@ -32,17 +32,30 @@ if __name__ == '__main__':
     # Plot the wcr field
     im = ax.imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
     #ax.set_title('Reaction Rate Field with Phi Contour')
-    ax.set_xlabel('X (mm)')
-    ax.set_ylabel('Y (mm)')
+    #Set label font size
+    ax.set_xlabel('x (mm)', fontsize=15)
+    ax.set_ylabel('y (mm)', fontsize=15)
 
     # Overlay the black contour of the phi field (not the filtered one)
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
     ax.contour(phi, levels=[0], colors='black', extent=extent_mm)
 
+    #Change font of the numbers on the axes
+    ax.tick_params(axis='both', which='major', labelsize=12)
+
     # Create a new axes on the right which will be used for the colorbar
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
-    fig.colorbar(im, cax=cax)
+
+    #Set colorbar font size
+    cbar = fig.colorbar(im, cax=cax)
+    cbar.ax.tick_params(labelsize=12)
+
+    #Color bar "Phi res" in greek letters
+    #cbar.set_label('$\u03A6_{res}$', fontsize=15)
 
     plt.tight_layout()
     plt.show()
+
+#Print "Phi (capital) res" in greek letters
+    
