@@ -19,6 +19,11 @@ y = np.arange(0,ly+dy,dy)
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 0)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
 
+# i make graph
+plt.pcolor(x, y, wcr_field_res, cmap='hot')
+plt.colorbar()
+plt.show()
+
 
 # Data Analysis
 NN=np.empty(1)
@@ -28,8 +33,8 @@ print(DNS)
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
 
-bing=abs(np.subtract(data,data1))
-plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
+wronk_chad=abs(np.subtract(data,data1))
+plt.pcolor(x, y, np.moveaxis(wronk_chad, (0,1), (1,0)), cmap ='hot')
 plt.colorbar()
 plt.show()
 
