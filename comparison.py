@@ -59,7 +59,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
 
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
-density = ax.scatter_density(data, data1, cmap=hot)
+density = ax.scatter_density(wcr_field_res, wcr_field_NN, cmap=hot)
 plt.plot([0,250000], [0,250000], linestyle='--', marker='', c='black', lw=0.8)
 plt.ylabel("$\\bar{\\omega}_{c,NN}^{+}$")
 plt.xlabel("$\\bar{\\omega}_{c,res}^{+}$")
@@ -93,16 +93,16 @@ plt.plot(filter_sizes, pearson_r_vals)
 plt.show()
 
 # data plot
-plt.pcolor(x, y, np.moveaxis(data1, (0,1), (1,0)), cmap = 'hot')
+plt.pcolor(x, y, np.moveaxis(wcr_field_NN, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
 plt.show()
 
 sexy='hot'
-error=np.subtract(data,data1)
+error=np.subtract(wcr_field_res,wcr_field_NN)
 plt.pcolor(x, y, np.moveaxis(error, (0,1), (1,0)), cmap =sexy)
 plt.colorbar()
 plt.show()
 
 # data plot
-plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
+plt.pcolor(x, y, np.moveaxis(wcr_field_res, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
