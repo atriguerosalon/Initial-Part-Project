@@ -43,12 +43,12 @@ def run_apply_gaussian():
         # Now, visualize the filtered field
         plt.figure(figsize=(10, 5))
         plt.subplot(1, 2, 1)
-        plt.imshow(wcr_field_star, cmap='inferno', origin='lower')
+        plt.imshow(wcr_field_star, cmap='hot', origin='lower')
         plt.title('Original ωcT Field')
         plt.colorbar()
 
         plt.subplot(1, 2, 2)
-        plt.imshow(wcr_field_filtered, cmap='inferno', origin='lower')
+        plt.imshow(wcr_field_filtered, cmap='hot', origin='lower')
         plt.title(f'Filtered ωcT Field (σ={sigma})')
         plt.colorbar()
 
