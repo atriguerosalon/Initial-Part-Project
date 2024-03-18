@@ -18,7 +18,7 @@ y = np.arange(0,ly+dy,dy)
 
 # data load
 def phi_field_res(filter_size):
-  phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
+  phi_res = apply_gaussian(filter_size*10, exclude_boundaries)[2].T
   return phi_res
 
 def phi_field_NN(filter_size):
