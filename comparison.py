@@ -33,8 +33,13 @@ print(DNS)
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
 
+<<<<<<< HEAD
 wronk_chad=abs(np.subtract(data,data1))
 plt.pcolor(x, y, np.moveaxis(wronk_chad, (0,1), (1,0)), cmap ='hot')
+=======
+wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
+plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
+>>>>>>> 8616e96702525a6ff74a55590efa300bcc4894fd
 plt.colorbar()
 plt.show()
 
