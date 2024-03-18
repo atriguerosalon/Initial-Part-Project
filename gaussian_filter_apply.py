@@ -36,29 +36,29 @@ def apply_gaussian(sigma, exclude_boundaries):
 
     return wcr_field_filtered, ct_field_filtered, phi_filtered
 
+def run_apply_gaussian():
+    for sigma in sigma_steps:
+        # Apply Gaussian filter to the wcr_field
+        wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma)
+        # Now, visualize the filtered field
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.imshow(wcr_field_star, cmap='inferno', origin='lower')
+        plt.title('Original ωcT Field')
+        plt.colorbar()
 
-for sigma in sigma_steps:
-    # Apply Gaussian filter to the wcr_field
-    wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma)
-    # Now, visualize the filtered field
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.imshow(wcr_field_star, cmap='inferno', origin='lower')
-    plt.title('Original ωcT Field')
-    plt.colorbar()
+        plt.subplot(1, 2, 2)
+        plt.imshow(wcr_field_filtered, cmap='inferno', origin='lower')
+        plt.title(f'Filtered ωcT Field (σ={sigma})')
+        plt.colorbar()
 
-    plt.subplot(1, 2, 2)
-    plt.imshow(wcr_field_filtered, cmap='inferno', origin='lower')
-    plt.title(f'Filtered ωcT Field (σ={sigma})')
-    plt.colorbar()
-
-    plt.tight_layout()
-    
-    if not os.path.exists('figs'):
-        os.makedirs('figs')
-    plt.savefig('figs/' + f'wcr_field_filtered_sigma_{sigma}_new.pdf', dpi=300)
-    #Save figure as pdf with sigma value on the filename
-    #plt.savefig(f'wcr_field_filtered_sigma_{sigma}.pdf')
+        plt.tight_layout()
+        
+        if not os.path.exists('figs'):
+            os.makedirs('figs')
+        plt.savefig('figs/' + f'wcr_field_filtered_sigma_{sigma}_new.pdf', dpi=300)
+        #Save figure as pdf with sigma value on the filename
+        #plt.savefig(f'wcr_field_filtered_sigma_{sigma}.pdf')
 
 
 
