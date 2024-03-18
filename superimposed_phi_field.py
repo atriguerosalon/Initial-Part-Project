@@ -6,12 +6,11 @@ import os
 from data_preparation import filename_to_field, create_custom_cmap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-# Constants and function definitions as provided earlier ...
 
 if __name__ == '__main__':
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['font.family'] = 'STIXGeneral'
-    exclude_boundary = 5
+    exclude_boundary = 4
     sigma_value = 5  # Adjust sigma value for Gaussian filter as needed
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'

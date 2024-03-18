@@ -4,9 +4,7 @@ from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap
 import os
 
-# Enable LaTeX text rendering
-#rc('text', usetex=True)
-#rc('font', family='serif')
+# Add desired font settings
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
@@ -19,7 +17,7 @@ data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
-#WHY IS THIS A THING!!!
+# Apply transformations to match the orientation of the fields
 phi = phi.T
 phi = np.flipud(phi)
 
@@ -85,10 +83,10 @@ cbar_ax = fig.add_axes([0.87, 0.1, 0.025, 0.85])
 im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
 
 # Create the colorbar
-fig.colorbar(im, cax=cbar_ax)
+cbar =fig.colorbar(im, cax=cbar_ax)
 
-# Set colorbar label
-#cbar_ax.set_ylabel('Normalized Value', rotation=270, labelpad=20)
+#Set colorbar font size
+cbar.ax.tick_params(labelsize=12)
 
 #Save figure as pdf
 if not os.path.exists('final_figs'):
