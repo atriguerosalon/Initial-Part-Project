@@ -19,7 +19,14 @@ exclude_boundaries = 5
 # data load
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, exclude_boundaries)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
-phi_NN = np.load('Phi_NN_0.5.npy')
+phi_NN_0.25 = np.load('Phi_NN_0.25.npy')
+phi_NN_0.5 = np.load('Phi_NN_0.5.npy')
+phi_NN_0.75 = np.load('Phi_NN_0.75.npy')
+phi_NN_1.0 = np.load('Phi_NN_1.0.npy')
+phi_NN_1.25 = np.load('Phi_NN_1.25.npy')
+phi_NN_1.5 = np.load('Phi_NN_1.5.npy')
+phi_NN_1.75 = np.load('Phi_NN_1.75.npy')
+phi_NN_2.0 = np.load('Phi_NN_2.0.npy')
 
 '''
 wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
