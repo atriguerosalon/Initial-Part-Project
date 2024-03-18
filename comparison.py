@@ -14,24 +14,24 @@ lx, ly = 0.01, 0.01 #[m]
 dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
+exclude_boundaries = 5
 
 # data load
-wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 0)
+wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, exclude_boundaries)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
 
 # Data Analysis
 NN=np.empty(1)
-DNS=np.empty(1)
-print(NN)
-print(DNS)
+DNS=
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
 
+'''
 wronk_chad=abs(np.subtract(wcr_field_res,wcr_field_NN))
 plt.pcolor(x, y, np.moveaxis(wronk_chad, (0,1), (1,0)), cmap ='hot')
 plt.colorbar()
 plt.show()
-
+'''
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
@@ -45,7 +45,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
 ], N=256)
 
 
-
+'''
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
 density = ax.scatter_density(wcr_field_res, wcr_field_NN, cmap=hot)
@@ -57,18 +57,18 @@ plt.xlim((0,250000))
 cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
 fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
 plt.show()
-
+'''
 
 filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 def calculate_MSE(filter_size):
-  beep = [val for sublist in DNS(filter_size) for val in sublist]
+  beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
   boop = [val for sublist in NN(filter_size) for val in sublist]
   MSE = mean_squared_error(beep, boop)
   return MSE
 
 def calculate_pearson_r(filter_size):
-  beep = [val for sublist in DNS(filter_size) for val in sublist]
+  beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
   boop = [val for sublist in NN(filter_size) for val in sublist]
   pearson_r = sp.stats.pearsonr(beep, boop)
   return pearson_r
@@ -76,8 +76,10 @@ def calculate_pearson_r(filter_size):
 MSE_vals=map(calculate_MSE(), filter_sizes)
 pearson_r_vals=map(calculate_pearson_r(), filter_sizes)
 
-#temp
-plt.plot(filter_sizes, MSE_vals)
+# Plot MSE
+# ...
+
+# Plot Pearson R
 plt.plot(filter_sizes, pearson_r_vals)
 plt.show()
 
@@ -86,7 +88,7 @@ plt.pcolor(x, y, np.moveaxis(wcr_field_NN, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
 plt.show()
 
-# erro plot
+# error plot
 sexy='hot'
 wronk=np.subtract(wcr_field_res,wcr_field_NN)
 plt.pcolor(x, y, np.moveaxis(wronk, (0,1), (1,0)), cmap =sexy)
