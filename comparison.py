@@ -6,7 +6,8 @@ from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from gaussian_filter_apply import apply_gaussian
-
+#import NN from data_preparation
+#import DNS
 # spatial constants
 nx, ny = 384, 384
 lx, ly = 0.01, 0.01 #[m]
@@ -15,12 +16,9 @@ x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
 
 # data load
-wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 5)
-# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add results from NN
+wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 0)
+# wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 0) add results from NN
 
-# data plot
-plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
-plt.colorbar()
 
 # Data Analysis
 NN=np.empty(1)
@@ -29,19 +27,6 @@ print(NN)
 print(DNS)
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
-
-
-# data plot
-plt.pcolor(x, y, np.moveaxis(data1, (0,1), (1,0)), cmap = 'hot')
-plt.colorbar()
-plt.show()
-
-sexy='hot'
-error=np.subtract(data,data1)
-plt.pcolor(x, y, np.moveaxis(error, (0,1), (1,0)), cmap =sexy)
-plt.colorbar()
-plt.show()
-
 
 bing=abs(np.subtract(data,data1))
 plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
@@ -94,8 +79,20 @@ pearson_r_vals=map(calculate_pearson_r(), filter_sizes)
 
 #temp
 plt.plot(filter_sizes, MSE_vals)
-plt.xlabel()
 plt.plot(filter_sizes, pearson_r_vals)
 plt.show()
 
-#
+# data plot
+plt.pcolor(x, y, np.moveaxis(data1, (0,1), (1,0)), cmap = 'hot')
+plt.colorbar()
+plt.show()
+
+sexy='hot'
+error=np.subtract(data,data1)
+plt.pcolor(x, y, np.moveaxis(error, (0,1), (1,0)), cmap =sexy)
+plt.colorbar()
+plt.show()
+
+# data plot
+plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
+plt.colorbar()
