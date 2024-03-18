@@ -14,26 +14,32 @@ dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
 
+# Filter sizes
+filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+
 # data load
 wcr_field_res, ct_field_res, phi_res = apply_gaussian(1, 5)
 # wcr_field_NN, ct_field_NN, phi_NN = apply_gaussian(1, 5) add results from NN
+data = 'nablatemp-slice-B1-0000080000.raw'
+data1 = 'wtemp-slice-B1-0000080000.raw'
 
-#DATA IS NOT DEFINED?
 # data plot
 plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
 
 # Data Analysis
+'''
 NN=np.empty(1)
 DNS=np.empty(1)
 print(NN)
 print(DNS)
 if len(NN)!=len(DNS):
   print("Data is not of the same size. NN has a size "+str(len(NN))+"while DNS has a size"+str(len(DNS)))
+'''
 
-
-# data plot
-plt.pcolor(x, y, np.moveaxis(data1, (0,1), (1,0)), cmap = 'hot')
+# Graphs
+'''
+plt.pcolor(x, y, np.moveaxis(data, (0,1), (1,0)), cmap = 'hot')
 plt.colorbar()
 plt.show()
 
@@ -43,11 +49,11 @@ plt.pcolor(x, y, np.moveaxis(error, (0,1), (1,0)), cmap =sexy)
 plt.colorbar()
 plt.show()
 
-
 bing=abs(np.subtract(data,data1))
 plt.pcolor(x, y, np.moveaxis(abserror, (0,1), (1,0)), cmap ='hot')
 plt.colorbar()
 plt.show()
+'''
 
 #Why are we creating a colormap? If anything, might want to use data_preparation.create_custom_cmap()
 hot = LinearSegmentedColormap.from_list('white_viridis', [
@@ -76,14 +82,12 @@ fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
 plt.show()
 
 
-filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
+# Calculating MSE and r_p
 beep = [val for sublist in data for val in sublist]
 boop = [val for sublist in data1 for val in sublist]
 
-
 MSE = mean_squared_error(beep, boop)
 print(MSE)
-
 pearson_r = sp.stats.pearsonr(beep, boop)
 print(pearson_r.statistic**2)
