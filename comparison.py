@@ -12,8 +12,6 @@ from datashader.mpl_ext import dsshow
 import pandas as pd
 import math
 
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = 'Computer Modern'
 
 #import NN from data_preparation
 #import DNS
