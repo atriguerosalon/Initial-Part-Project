@@ -92,9 +92,6 @@ def using_datashader(ax, filter_size):
         cmap=hot,
         ax=ax,
     )
-
-    plt.colorbar(dsartist)
-
 fig, ax = plt.subplots()
 using_datashader(ax, 1.0)
 plt.show()
@@ -116,22 +113,36 @@ def plot_comparison_graphs():
     plt.pcolor(phi_field_NN(filter_sizes[i]), cmap='jet')
   plt.suptitle("$\\Delta /\\delta t_{th}$", y=0.04)
   plt.show()
-plot_comparison_graphs()
-'''
+#plot_comparison_graphs()
 
-filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+def calculate_pearson_r(filter_size):
+  beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
+  boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
+  pearson_r = sp.stats.pearsonr(beep, boop)[0]
+  return pearson_r
 
 def calculate_MSE(filter_size):
-  beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
-  boop = [val for sublist in phi_NN for val in sublist]
+  beep = [val for sublist in  phi_field_res(filter_size) for val in sublist]
+  boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
   MSE = mean_squared_error(beep, boop)
   return MSE
 
-def calculate_pearson_r(filter_size):
-  beep = [val for sublist in apply_gaussian(filter_size, exclude_boundaries)[2] for val in sublist]
-  boop = [val for sublist in phi_NN for val in sublist]
-  pearson_r = sp.stats.pearsonr(beep, boop)
-  return pearson_r
+def comparison_plot(MSE_or_Pearson):
+  y=[]
+  if MSE_or_Pearson=="Pearson":
+    for i in filter_sizes:
+      y.append(calculate_pearson_r(i))
+  elif MSE_or_Pearson=="MSE":
+    for i in filter_sizes:
+      y.append(calculate_MSE(i))
+  else:
+    print("comparison_plot only takes \'MSE\' or \'Pearson\'")
+  plt.plot(filter_sizes,y, 'b', marker='o')
+  plt.show()
+comparison_plot('MSE')
+'''
+
+
 
 MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
 pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
