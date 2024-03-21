@@ -11,7 +11,6 @@ import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
 import math
-
 #import NN from data_preparation
 #import DNS
 # spatial constants
@@ -21,7 +20,7 @@ lx, ly = 0.01, 0.01 #[m]
 dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
-filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 # data load
 def phi_field_res(filter_size):
@@ -102,7 +101,7 @@ plt.ylabel("$\\bar{\\Phi}_{c,NN}$")
 plt.xlabel("$\\bar{\\Phi}_{c,res}$")
 plt.show()
 
-#scatter_plot_run1(1.0)
+# scatter_plot_run1(1.0)
 white_jet = create_custom_cmap()
 def plot_comparison_graphs():
   for i in range(len(filter_sizes)):
@@ -119,7 +118,7 @@ def plot_comparison_graphs():
     plt.pcolor(phi_field_NN(filter_sizes[i]), cmap='jet')
   plt.suptitle("$\\Delta /\\delta_{th}$", y=0.04)
   plt.show()
-#plot_comparison_graphs()
+plot_comparison_graphs()
 
 def calculate_pearson_r(filter_size):
   beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
@@ -146,10 +145,9 @@ def comparison_plot(MSE_or_Pearson):
   plt.plot(filter_sizes,y, 'b', marker='o')
   plt.show()
 comparison_plot('MSE')
+
+
 '''
-
-
-
 MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
 pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
 
