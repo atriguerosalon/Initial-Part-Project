@@ -12,7 +12,10 @@ from datashader.mpl_ext import dsshow
 import pandas as pd
 import math
 
-plt.rcParams["text.usetex"] = True
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "Computer Modern Roman"
+})
 
 #import NN from data_preparation
 #import DNS
