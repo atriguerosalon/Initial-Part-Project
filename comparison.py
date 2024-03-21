@@ -10,6 +10,7 @@ from gaussian_filter_apply import apply_gaussian
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
+import math
 #import NN from data_preparation
 #import DNS
 # spatial constants
@@ -103,12 +104,12 @@ white_jet = create_custom_cmap()
 def plot_comparison_graphs():
   for i in range(len(filter_sizes)):
     if i==0:
-      plt.subplot(2,len(filter_sizes),i+1).text(-171, 171, "$\\Phi_{res}$", fontsize=16""", fontfamily='serif'""")
-      plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).text(-171, 171, "$\\Phi_{NN}$", fontsize=16""", fontfamily='serif'""")
+      plt.subplot(2,len(filter_sizes),i+1).text(-171, 171, "$\\Phi_{res}$", fontsize=16, fontfamily='serif')
+      plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).text(-171, 171, "$\\Phi_{NN}$", fontsize=16, fontfamily='serif')
     plt.subplot(2,len(filter_sizes),i+1).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1).axes.get_yaxis().set_visible(False)
     plt.pcolor(phi_field_res(filter_sizes[i]), cmap='jet')
-    plt.colorbar(location='top')
+    plt.colorbar(location='top').set_ticks([0, math.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15)
