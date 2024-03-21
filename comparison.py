@@ -94,6 +94,7 @@ def using_datashader(ax, filter_size):
     )
 fig, ax = plt.subplots()
 using_datashader(ax, 1.0)
+plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
 plt.show()
 
 #scatter_plot_run1(1.0)
