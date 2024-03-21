@@ -112,7 +112,7 @@ def plot_comparison_graphs():
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15)
     plt.pcolor(phi_field_NN(filter_sizes[i]), cmap='jet')
-  plt.suptitle("$\\Delta /\\delta t_{th}$", y=0.04)
+  plt.suptitle("$\\Delta /\\delta_{th}$", y=0.04)
   plt.show()
 #plot_comparison_graphs()
 
