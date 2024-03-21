@@ -46,14 +46,17 @@ plt.show()
 
 
 def scatter_plot_run(filter_size):
-  fig = plt.figure()
+  fig = plt.figure(figsize=(12, 10)) #potentially wronk
+  plt.scatter(phi_field_res(filter_size), phi_field_NN(filter_size), s=0.0001)
+  """
   ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
   density = ax.scatter_density(phi_field_res(filter_size), phi_field_NN(filter_size), cmap=hot)
-  plt.plot([0,250000], [0,250000], linestyle='--', marker='', c='black', lw=0.8)
+  plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
   plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
   plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
   cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
   fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
+  """
   plt.show()
 scatter_plot_run(1.0)
 
