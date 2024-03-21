@@ -5,6 +5,7 @@ import mpl_scatter_density # adds projection='scatter_density'
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from data_preparation import create_custom_cmap
 from gaussian_filter_apply import apply_gaussian
 import datashader as ds
 from datashader.mpl_ext import dsshow
@@ -18,6 +19,7 @@ lx, ly = 0.01, 0.01 #[m]
 dx, dy = lx/(nx-1), ly/(ny-1)
 x = np.arange(0,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
+filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 # data load
 def phi_field_res(filter_size):
@@ -41,6 +43,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
 '''
 plt.subplot(1,2,1)
 plt.pcolor(x,y, phi_field_NN(1.0))
+plt.colorbar(location='above')
 plt.subplot(1,2,2)
 plt.pcolor(x,y, phi_field_res(1.0))
 plt.colorbar()
@@ -96,7 +99,23 @@ using_datashader(ax, 1.0)
 plt.show()
 
 #scatter_plot_run1(1.0)
-
+white_jet = create_custom_cmap()
+def plot_comparison_graphs():
+  for i in range(len(filter_sizes)):
+    if i==0:
+      plt.subplot(2,len(filter_sizes),i+1).text(-171, 171, "$\\Phi_{res}$", fontsize=16)
+      plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).text(-171, 171, "$\\Phi_{NN}$", fontsize=16, fontfamily='times')
+    plt.subplot(2,len(filter_sizes),i+1).axes.get_xaxis().set_visible(False)
+    plt.subplot(2,len(filter_sizes),i+1).axes.get_yaxis().set_visible(False)
+    plt.pcolor(phi_field_res(filter_sizes[i]), cmap='jet')
+    plt.colorbar(location='top')
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15, fontfamily='times')
+    plt.pcolor(phi_field_NN(filter_sizes[i]), cmap='jet')
+  plt.suptitle("$\\Delta /\\delta t_{th}$", y=0.04)
+  plt.show()
+plot_comparison_graphs()
 '''
 
 filter_sizes=[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
