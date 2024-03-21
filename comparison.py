@@ -12,6 +12,9 @@ from datashader.mpl_ext import dsshow
 import pandas as pd
 import math
 
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = 'Computer Modern'
+
 #import NN from data_preparation
 #import DNS
 # spatial constants
@@ -144,9 +147,9 @@ def comparison_plot(MSE_or_Pearson):
   else:
     print("comparison_plot only takes \'MSE\' or \'Pearson\'")
   plt.plot(filter_sizes,y, 'k', marker='o')
-  plt.vlines(filter_sizes[1:-1], 0, max(y), colors='gray', linestyles='dashed', alpha=0.3)
+  plt.vlines(filter_sizes[1:-1], 0, 1.05*max(y), colors='gray', linestyles='dashed', alpha=0.3)
   plt.xlim(0.22, 2.03)
-  plt.ylim(0.85*min(y), max(y))
+  plt.ylim(0.95*min(y), 1.05*max(y))
   plt.tick_params(axis='both', which='major', direction='in', top=True, right=True)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$")
   if MSE_or_Pearson=="MSE":
