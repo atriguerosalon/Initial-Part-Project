@@ -12,11 +12,6 @@ from datashader.mpl_ext import dsshow
 import pandas as pd
 import math
 
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "Computer Modern Roman"
-})
-
 #import NN from data_preparation
 #import DNS
 # spatial constants
@@ -101,6 +96,10 @@ def using_datashader(ax, filter_size):
 fig, ax = plt.subplots()
 using_datashader(ax, 1.0)
 plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
+plt.xlimit(0,1)
+plt.ylimit(0,1)
+plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
+plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
 plt.show()
 
 #scatter_plot_run1(1.0)
