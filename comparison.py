@@ -26,11 +26,11 @@ filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 # data load
 def phi_field_res(filter_size):
-  phi_res = apply_gaussian(filter_size*10, exclude_boundaries)[2].T
+  phi_res = apply_gaussian(filter_size*10, exclude_boundaries)[2]
   return phi_res
 
 def phi_field_NN(filter_size):
-  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
+  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy").T
   return phi_NN
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
@@ -145,8 +145,8 @@ def comparison_plot(MSE_or_Pearson):
   else:
     print("comparison_plot only takes \'MSE\' or \'Pearson\'")
   plt.plot(filter_sizes,y, 'k', marker='o')
-  plt.vlines(filter_sizes[1:-1], 0, 1.05*max(y), colors='gray', linestyles='dashed', alpha=0.3)
-  plt.xlim(0.22, 2.03)
+  plt.vlines(filter_sizes[0:-1], 0, 1.05*max(y), colors='gray', linestyles='dashed', alpha=0.3)
+  plt.xlim(0.47, 2.03)
   plt.ylim(0.95*min(y), 1.05*max(y))
   plt.tick_params(axis='both', which='major', direction='in', top=True, right=True)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$")
@@ -155,7 +155,7 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$")
   plt.show()
-comparison_plot('Pearson')
+comparison_plot('MSE')
 '''
 MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
 pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
