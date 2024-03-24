@@ -8,7 +8,7 @@ import os
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
-exclude_boundaries = 5
+exclude_boundaries = (5,5)
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
 sigma_steps = np.arange(1, 2, 0.5)
 #Show size of wcr_field_star

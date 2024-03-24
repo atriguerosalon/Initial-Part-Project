@@ -21,7 +21,7 @@ SL = 1.6585735551 # m/s
 
 #data_path1 
 data_path = "C:\\Users\\danie\\Documents\\delft university of technology\\test analysis and simulation\\mission1\\mission1\\nablatemp-slice-B1-0000080000.raw"
-
+#PLS MAKE THE DATA PATH WITH RESPECT TO THE WORKING DIRECTORY, SO THAT IT CAN BE EASILY RUN ON ANY MACHINE
 
 ctdata = np.fromfile(data_path, count=-1, dtype=np.float64).reshape(nx, ny)
 ctdata /= 123.47
