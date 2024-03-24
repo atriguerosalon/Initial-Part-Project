@@ -10,7 +10,7 @@ plt.rcParams['font.family'] = 'STIXGeneral'
 
 # Define the standard deviation for the Gaussian filter
 exclude_boundary = 4
-sigma_value = 15  # Example sigma value for Gaussian filter, adjust as needed
+sigma_value = 10  # Example sigma value for Gaussian filter, adjust as needed
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
