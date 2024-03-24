@@ -17,17 +17,36 @@ MAX_WCR = 1996.8891
 MAX_CT = 3931.0113
 
 # Function definitions
-def exclude_boundaries(field, exclude_boundary):
-    if exclude_boundary > 0:
-        return field[exclude_boundary:-exclude_boundary, exclude_boundary:-exclude_boundary]
+def exclude_boundaries(field, left_exclusion, right_exclusion):
+    # Transpose and flip operations to match your data formatting needs
+    field = np.flipud(field.T)
+    # Only modify the second dimension (columns) of the array.
+    if left_exclusion > 0 and right_exclusion > 0:
+        # Print shape of the field before exclusion
+        #print(f"Shape of field before exclusion: {field.shape}")
+        cropped_field = field[:, left_exclusion:-right_exclusion or None]
+        # Print shape of the field after exclusion
+        #print(f"Shape of field after exclusion: {cropped_field.shape}")
+        return cropped_field
+    elif left_exclusion > 0:
+        return field[:, left_exclusion:]
+    elif right_exclusion > 0:
+        return field[:, :-right_exclusion or None]
     else:
         return field
     
-def load_data(data_path_temp, data_path_reaction, exclude_boundary=0):
+def load_data(data_path_temp, data_path_reaction, exclude_boundary=(0,0)):
+    # Unpack the exclude_boundary tuple
+    left_exclude, right_exclude = exclude_boundary
+    
+    # Load the data and reshape
     data_temp = np.fromfile(data_path_temp, count=-1, dtype=np.float64).reshape(nx, ny)
     data_reaction = np.fromfile(data_path_reaction, count=-1, dtype=np.float64).reshape(nx, ny)
-    data_temp = exclude_boundaries(data_temp, exclude_boundary)
-    data_reaction = exclude_boundaries(data_reaction, exclude_boundary)
+    
+    # Apply the exclusion boundaries
+    data_temp = exclude_boundaries(data_temp, left_exclude, right_exclude)
+    data_reaction = exclude_boundaries(data_reaction, left_exclude, right_exclude)
+    
     return data_temp, data_reaction
     
 def calculate_fields(data_temp, data_reaction, TB, TU):
@@ -43,9 +62,9 @@ def normalize_fields(wcr_field, ct_field, max_wcr, max_ct):
 def calculate_phi(wcr_field_star, ct_field_star):
     phi = np.zeros_like(wcr_field_star)
     phi[(wcr_field_star > 0.4) & (ct_field_star < 0.2)] = 1
-    return phi
+    return np.flipud(phi)
 
-def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=0):
+def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0)):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, exclude_boundaries)
     wcr_field, ct_field = calculate_fields(data_temp, data_reaction, TB, TU)
     wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCR, MAX_CT)
@@ -98,7 +117,7 @@ def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
 
 if __name__ == '__main__':
     # Usage of functions
-    exclude_boundary = 0
+    exclude_boundary = (5,5)
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)

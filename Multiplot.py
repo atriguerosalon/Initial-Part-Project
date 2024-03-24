@@ -9,23 +9,32 @@ plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
 # Define the standard deviation for the Gaussian filter
-exclude_boundary = 4
-sigma_value = 15  # Example sigma value for Gaussian filter, adjust as needed
+
+# filter size in cell number - 25 means length of 25 cells
+fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
+filter_size = fwidth_n[2]
+
+# std. deviation
+sigma_value = np.sqrt(filter_size ** 2 / 12.0)
+
+# Exclusion boundaries
+base_exclusion_left = 0
+base_exclusion_right = 0
+additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
+
+left_exclusion = base_exclusion_left + additional_exclusion
+right_exclusion = base_exclusion_right + additional_exclusion
+exclude_boundary = int(left_exclusion), int(right_exclusion)
+
+# Data paths
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
-# Apply transformations to match the orientation of the fields
-phi = phi.T
+# WHYYYYYYY
 phi = np.flipud(phi)
-
-wcr_field_star = wcr_field_star.T
-wcr_field_star = np.flipud(wcr_field_star)
-
-ct_field_star = ct_field_star.T
-ct_field_star = np.flipud(ct_field_star)
 
 # Apply Gaussian filters
 wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
@@ -39,7 +48,11 @@ white_jet = create_custom_cmap()
 fig, axs = plt.subplots(2, 3, figsize=(10, 6))  # Adjust the figure size as needed
 
 # Set common extent for all plots
-extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
+original_extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
+new_horizontal_extent_start_mm = 10 * left_exclusion / 384
+new_horizontal_extent_end_mm = 10 - 10 * right_exclusion / 384
+    
+extent_mm = [new_horizontal_extent_start_mm, new_horizontal_extent_end_mm, 0, 10]
 
 # Plotting the original fields
 axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
@@ -72,7 +85,19 @@ for ax in axs.flat:
     ax.tick_params(axis='both', which='major', labelsize=12)
     ax.label_outer()
 
+subplot_labels = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
 
+# Label the top left of each subplot
+for i, ax in enumerate(axs.flat):
+    if i == 0 or i == 3:
+        offset = -0.2
+    else:
+        offset = -0.1
+
+    # Position the text in the top left of the subplot
+    ax.text(offset, 1.1, subplot_labels[i], transform=ax.transAxes, fontsize=16, 
+            fontweight='normal', va='top', ha='left', color='black')
+    
 # Adjust the subplots to make space for the colorbar
 fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.1)
 

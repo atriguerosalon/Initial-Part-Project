@@ -10,23 +10,35 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 if __name__ == '__main__':
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['font.family'] = 'STIXGeneral'
-    exclude_boundary = 4
-    sigma_value = 5  # Adjust sigma value for Gaussian filter as needed
+    
+    
+    # filter size in cell number - 25 means length of 25 cells
+    fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
+    filter_size = fwidth_n[0]
+    # std. deviation: NOT USED IN THIS SCRIPT
+    sigma_value = np.sqrt(filter_size ** 2 / 12.0)
+    
+    # Calculate the exclusion boundary based on the filter size
+    base_exclusion_left = 25
+    base_exclusion_right = 0
+    additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
+
+    left_exclusion = base_exclusion_left + additional_exclusion
+    right_exclusion = base_exclusion_right + additional_exclusion
+    exclude_boundary = int(left_exclusion), int(right_exclusion)
+    #exclude_boundary = (4, 4)  # For testing
+    
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
-    # Apply transformations if needed
-    phi = phi.T
-
-    wcr_field_star = wcr_field_star.T
-    wcr_field_star = np.flipud(wcr_field_star)
-
-    # Apply Gaussian filter to phi
-    
-    extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
+    original_extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
+    new_horizontal_extent_start_mm = 10 * left_exclusion / 384
+    new_horizontal_extent_end_mm = 10 - 10 * right_exclusion / 384
+       
+    extent_mm = [new_horizontal_extent_start_mm, new_horizontal_extent_end_mm, 0, 10]  # [left, right, bottom, top] in mm
     white_jet = create_custom_cmap()
     fig, ax = plt.subplots(figsize=(6, 6))
 
@@ -36,6 +48,7 @@ if __name__ == '__main__':
     #Set label font size
     ax.set_xlabel('$x$ (mm)', fontsize=15)
     ax.set_ylabel('$y$ (mm)', fontsize=15)
+
     # Overlay the black contour of the phi field (not the filtered one)
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
     ax.contour(phi, levels=[0], colors='black', extent=extent_mm)
