@@ -4,7 +4,7 @@ from scipy.ndimage import gaussian_filter
 import matplotlib.image as mpimg
 import os
 from data_preparation import filename_to_field, create_custom_cmap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1 import make_axes_locatable #never used this before but it gets the job done
 
 
 if __name__ == '__main__':
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
+    # Adjust the size of the plots
     original_extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
     new_horizontal_extent_start_mm = 10 * left_exclusion / 384
     new_horizontal_extent_end_mm = 10 - 10 * right_exclusion / 384

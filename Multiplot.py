@@ -8,8 +8,6 @@ import os
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
-# Define the standard deviation for the Gaussian filter
-
 # filter size in cell number - 25 means length of 25 cells
 fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
 filter_size = fwidth_n[2]
@@ -48,9 +46,11 @@ white_jet = create_custom_cmap()
 fig, axs = plt.subplots(2, 3, figsize=(10, 6))  # Adjust the figure size as needed
 
 # Set common extent for all plots
+nx_original = 384
+ny_original = 384
 original_extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
-new_horizontal_extent_start_mm = 10 * left_exclusion / 384
-new_horizontal_extent_end_mm = 10 - 10 * right_exclusion / 384
+new_horizontal_extent_start_mm = original_extent_mm[1] * left_exclusion / nx_original
+new_horizontal_extent_end_mm = original_extent_mm[1] - original_extent_mm[1] * right_exclusion / ny_original
     
 extent_mm = [new_horizontal_extent_start_mm, new_horizontal_extent_end_mm, 0, 10]
 
