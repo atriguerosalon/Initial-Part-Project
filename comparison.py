@@ -70,44 +70,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0.6, '#D22B2B'),
     (1, '#D22B2B'),
 ], N=256)
-'''
-plt.subplot(1,2,1)
-plt.pcolor(x,y, phi_field_NN(1.0))
-plt.colorbar(location='above')
-plt.subplot(1,2,2)
-plt.pcolor(x,y, phi_field_res(1.0))
-plt.colorbar()
-plt.show()
-'''
-'''
-#This is really bad timewise lmaoooo:
-def scatter_plot_run1(filter_size):
-  nbins=500
-  fig = plt.figure(figsize=(12, 10)) #potentially wronk
-  #plt.scatter(phi_field_res(filter_size), phi_field_NN(filter_size), s=0.0001)
-  #beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
-  #boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
-  beep = phi_field_res(filter_size).flatten()
-  boop = phi_field_NN(filter_size).flatten()
-  k=sp.stats.gaussian_kde([beep, boop])
-  print("k generated")
-  #xi, yi = np.mgrid[min(beep):max(beep):nbins*1j, min(boop):max(boop):nbins*1j]
-  xi, yi = np.mgrid[beep.min():beep.max():nbins*1j, boop.min():boop.max():nbins*1j]
-  print("chill, be patient (esp you Owen), its 300k points with O(n) time complexity - usually takes about 10 mins")
-  zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-  # Make the plot
-  plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=hot)
-  '''
-  """
-  density = ax.scatter_density(phi_field_res(filter_size), phi_field_NN(filter_size), cmap=hot)
-  plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
-  plt.ylabel("$\\bar{\\Phi}_{c,NN}^{+}$")
-  plt.xlabel("$\\bar{\\Phi}_{c,res}^{+}$")
-  cbaxes = inset_axes(ax, width="3%", height="30%", loc=4)
-  fig.colorbar(density, cax=cbaxes, ticks=[], orientation='vertical')
-  """
-  plt.show()
-  
+
 def using_datashader(ax, filter_size):
     print(phi_field_NN(filter_size))
     df = pd.DataFrame(dict(x=phi_field_res(filter_size).flatten(), y=phi_field_NN(filter_size).flatten()))
