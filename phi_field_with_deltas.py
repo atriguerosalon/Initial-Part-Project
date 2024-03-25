@@ -61,7 +61,7 @@ if __name__ == '__main__':
     dashed_line_positions = fwidth_n[::2]
 
     # Convert the filter sizes to mm
-    dashed_line_positions_mm = [original_extent_mm[1] * fwidth_n[i] / nx_original for i in range(len(dashed_line_positions))]
+    dashed_line_positions_mm = [original_extent_mm[1] * dashed_line_positions[i] / nx_original for i in range(len(dashed_line_positions))]
 
     for pos in dashed_line_positions_mm:
         # Left side dashed line
