@@ -3,13 +3,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from data_preparation import create_custom_cmap
 from gaussian_filter_apply import apply_gaussian
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
-import math
 
 
 #import NN from data_preparation
@@ -115,7 +113,7 @@ def plot_comparison_graphs():
     plt.subplot(2,len(filter_sizes),i+1).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1).axes.get_yaxis().set_visible(False)
     plt.pcolor(phi_field_res(filter_sizes[i]), cmap='jet')
-    plt.colorbar(location='top').set_ticks([0, math.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
+    plt.colorbar(location='top').set_ticks([0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15)
