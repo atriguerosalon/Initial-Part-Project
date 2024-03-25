@@ -34,17 +34,24 @@ if __name__ == '__main__':
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
+    #plot phi field
+    plt.imshow(phi)
+    plt.show()
+    
     # Adjust the size of the plots
+    nx_original = 384
+    ny_original = 384
     original_extent_mm = [0, 10, 0, 10]  # [left, right, bottom, top] in mm
-    new_horizontal_extent_start_mm = 10 * left_exclusion / 384
-    new_horizontal_extent_end_mm = 10 - 10 * right_exclusion / 384
-       
+    new_horizontal_extent_start_mm = original_extent_mm[1] * left_exclusion / nx_original
+    new_horizontal_extent_end_mm = original_extent_mm[1] - original_extent_mm[1] * right_exclusion / ny_original
+        
     extent_mm = [new_horizontal_extent_start_mm, new_horizontal_extent_end_mm, 0, 10]  # [left, right, bottom, top] in mm
     white_jet = create_custom_cmap()
     fig, ax = plt.subplots(figsize=(6, 6))
 
     # Plot the wcr field
     im = ax.imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
+
     #ax.set_title('Reaction Rate Field with Phi Contour')
     #Set label font size
     ax.set_xlabel('$x$ (mm)', fontsize=15)
@@ -52,7 +59,7 @@ if __name__ == '__main__':
 
     # Overlay the black contour of the phi field (not the filtered one)
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
-    ax.contour(phi, levels=[0], colors='black', extent=extent_mm)
+    ax.contour(phi, levels=[0], colors='black', extent=extent_mm, origin = 'upper')
 
     #Change font of the numbers on the axes
     ax.tick_params(axis='both', which='major', labelsize=15)
