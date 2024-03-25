@@ -62,13 +62,18 @@ if __name__ == '__main__':
 
     # Convert the filter sizes to mm
     dashed_line_positions_mm = [original_extent_mm[1] * dashed_line_positions[i] / nx_original for i in range(len(dashed_line_positions))]
-
+    
+    #Base exclusion left and right in mm
+    base_exclusion_left = 10
+    base_exclusion_right = 0
+    base_exclusion_left_mm = original_extent_mm[1] * base_exclusion_left / nx_original
+    base_exclusion_right_mm = original_extent_mm[1] * base_exclusion_right / nx_original
     for pos in dashed_line_positions_mm:
         # Left side dashed line
-        print(original_extent_mm)
-        ax.axvline(x=original_extent_mm[0] + pos, color='black', linestyle='--', linewidth=1)
+        base_exclusion_left_mm = original_extent_mm[1] * base_exclusion_left / nx_original
+        ax.axvline(x=original_extent_mm[0] + pos + base_exclusion_left_mm, color='black', linestyle='--', linewidth=2)
         # Right side dashed line
-        ax.axvline(x=original_extent_mm[1] - pos, color='black', linestyle='--', linewidth=1)
+        ax.axvline(x=original_extent_mm[1] - pos - base_exclusion_right_mm, color='black', linestyle='--', linewidth=2)
 
     #Change font of the numbers on the axes
     ax.tick_params(axis='both', which='major', labelsize=15)
@@ -87,6 +92,6 @@ if __name__ == '__main__':
     # Save the figure
     if not os.path.exists('final_figs'):
         os.makedirs('final_figs')
-    plt.savefig('final_figs/phi_contour.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('final_figs/phi_contour_with_deltas.pdf', dpi=300, bbox_inches='tight')
     plt.tight_layout()
     plt.show()
