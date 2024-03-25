@@ -13,14 +13,6 @@ from scipy.ndimage import gaussian_filter
 #import NN from data_preparation
 #import DNS
 # spatial constants
-exclude_boundaries_L = 40
-exclude_boundaries_R =40
-exclude_boundaries=(exclude_boundaries_L, exclude_boundaries_R)
-nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
-lx, ly = 0.01, 0.01 #[m]
-dx, dy = lx/(nx-1), ly/(ny-1)
-x = np.arange(dx*exclude_boundaries_L,lx+dx,dx)
-y = np.arange(0,ly+dy,dy)
 filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 
@@ -49,6 +41,14 @@ def exclude_boundary(filter_size):
   left_exclusion = base_exclusion_left + additional_exclusion
   right_exclusion = base_exclusion_right + additional_exclusion
   return int(left_exclusion), int(right_exclusion)
+def get_boundaries(filter_size):
+  exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
+  nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
+  lx, ly = 0.01, 0.01 #[m]
+  dx, dy = lx/(nx-1), ly/(ny-1)
+  x = np.arange(dx*exclude_boundaries_L,lx+dx,dx)
+  y = np.arange(0,ly+dy,dy)
+  return x,y
 
 def phi_field_res(filter_size):
   phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary(filter_size))[2]
@@ -56,6 +56,7 @@ def phi_field_res(filter_size):
   return phi_res
 
 def phi_field_NN(filter_size):
+  exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
   phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
   phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1].T
   return phi_NN_bound
