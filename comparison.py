@@ -9,7 +9,6 @@ from gaussian_filter_apply import apply_gaussian
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
-import math
 
 
 #import NN from data_preparation
@@ -29,11 +28,14 @@ filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 # data load
 def phi_field_res(filter_size):
   phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
+  print("phi_res shape is"+str(phi_res.shape))
   return phi_res
 
 def phi_field_NN(filter_size):
-  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy").T
-  return phi_NN
+  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
+  phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1]
+  print("phi_NN shape is"+str(phi_NN_bound.shape))
+  return phi_NN_bound
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
@@ -84,7 +86,7 @@ def scatter_plot_run1(filter_size):
   plt.show()
   
 def using_datashader(ax, filter_size):
-
+    print(phi_field_NN(filter_size))
     df = pd.DataFrame(dict(x=phi_field_res(filter_size).flatten(), y=phi_field_NN(filter_size).flatten()))
     dsartist = dsshow(
         df,
@@ -115,7 +117,7 @@ def plot_comparison_graphs():
     plt.subplot(2,len(filter_sizes),i+1).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1).axes.get_yaxis().set_visible(False)
     plt.pcolor(phi_field_res(filter_sizes[i]), cmap='jet')
-    plt.colorbar(location='top').set_ticks([0, math.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
+    plt.colorbar(location='top').set_ticks([0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
     plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15)

@@ -12,7 +12,6 @@ exclude_boundaries = (5,5)
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
 sigma_steps = np.arange(1, 2, 0.5)
 #Show size of wcr_field_star
-print(f'size of wcr_field_star: {wcr_field_star.shape}')
 
 #Now rotate around the y=x axis
 wcr_field_star = wcr_field_star.T
