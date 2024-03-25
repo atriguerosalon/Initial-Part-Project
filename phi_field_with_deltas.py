@@ -11,10 +11,10 @@ if __name__ == '__main__':
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['font.family'] = 'STIXGeneral'
     
-    
     # filter size in cell number - 25 means length of 25 cells
     fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
-    filter_size = 0#fwidth_n[0]
+    #filter_size = fwidth_n[0]
+    filter_size = 0
     # std. deviation: NOT USED IN THIS SCRIPT
     sigma_value = np.sqrt(filter_size ** 2 / 12.0)
     
@@ -26,7 +26,6 @@ if __name__ == '__main__':
     left_exclusion = base_exclusion_left + additional_exclusion
     right_exclusion = base_exclusion_right + additional_exclusion
     exclude_boundary = int(left_exclusion), int(right_exclusion)
-    #exclude_boundary = (4, 4)  # For testing
     
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
@@ -85,9 +84,6 @@ if __name__ == '__main__':
     #Set colorbar font size
     cbar = fig.colorbar(im, cax=cax)
     cbar.ax.tick_params(labelsize=12)
-
-    #Color bar "Phi res" in greek letters
-    #cbar.set_label('$\u03A6_{res}$', fontsize=15)
 
     # Save the figure
     if not os.path.exists('final_figs'):
