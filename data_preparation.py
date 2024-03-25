@@ -62,7 +62,7 @@ def normalize_fields(wcr_field, ct_field, max_wcr, max_ct):
 def calculate_phi(wcr_field_star, ct_field_star):
     phi = np.zeros_like(wcr_field_star)
     phi[(wcr_field_star > 0.4) & (ct_field_star < 0.2)] = 1
-    return np.flipud(phi)
+    return phi
 
 def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0)):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, exclude_boundaries)

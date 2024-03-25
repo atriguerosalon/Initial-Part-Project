@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
-from data_preparation import create_custom_cmap
-from gaussian_filter_apply import apply_gaussian
+from data_preparation import create_custom_cmap, filename_to_field
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
+from scipy.ndimage import gaussian_filter
 
 
 #import NN from data_preparation
@@ -24,9 +24,13 @@ y = np.arange(0,ly+dy,dy)
 filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
 
-# data load
+# Data paths
+data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
+data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
+
 def phi_field_res(filter_size):
-  phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
+  phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)[2]
+  phi_res = gaussian_filter(phi, sigma=filter_size)
   return phi_res
 
 def phi_field_NN(filter_size):

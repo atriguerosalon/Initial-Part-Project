@@ -31,9 +31,6 @@ data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 
-# WHYYYYYYY
-phi = np.flipud(phi)
-
 # Apply Gaussian filters
 wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
 ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
