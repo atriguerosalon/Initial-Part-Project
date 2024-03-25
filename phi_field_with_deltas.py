@@ -14,12 +14,12 @@ if __name__ == '__main__':
     
     # filter size in cell number - 25 means length of 25 cells
     fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
-    filter_size = fwidth_n[0]
+    filter_size = 0#fwidth_n[0]
     # std. deviation: NOT USED IN THIS SCRIPT
     sigma_value = np.sqrt(filter_size ** 2 / 12.0)
     
     # Calculate the exclusion boundary based on the filter size
-    base_exclusion_left = 25
+    base_exclusion_left = 0
     base_exclusion_right = 0
     additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
-    
+    wcr_field_star = np.clip(wcr_field_star, None, 1) #Naughty line, ask Alejandro
     # Adjust the size of the plots
     nx_original = 384
     ny_original = 384
@@ -57,6 +57,19 @@ if __name__ == '__main__':
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
     ax.contour(phi, levels=[0], colors='black', extent=extent_mm, origin = 'upper')
 
+    #Get the even indexes of the filter sizes
+    dashed_line_positions = fwidth_n[::2]
+
+    # Convert the filter sizes to mm
+    dashed_line_positions_mm = [original_extent_mm[1] * fwidth_n[i] / nx_original for i in range(len(dashed_line_positions))]
+
+    for pos in dashed_line_positions_mm:
+        # Left side dashed line
+        print(original_extent_mm)
+        ax.axvline(x=original_extent_mm[0] + pos, color='black', linestyle='--', linewidth=1)
+        # Right side dashed line
+        ax.axvline(x=original_extent_mm[1] - pos, color='black', linestyle='--', linewidth=1)
+
     #Change font of the numbers on the axes
     ax.tick_params(axis='both', which='major', labelsize=15)
 
@@ -77,5 +90,3 @@ if __name__ == '__main__':
     plt.savefig('final_figs/phi_contour.pdf', dpi=300, bbox_inches='tight')
     plt.tight_layout()
     plt.show()
-
-    
