@@ -73,7 +73,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
 ], N=256)
 
 def using_datashader(ax, filter_size):
-    print(phi_field_NN(filter_size))
+    #print(phi_field_NN(filter_size))
     df = pd.DataFrame(dict(x=phi_field_res(filter_size).flatten(), y=phi_field_NN(filter_size).flatten()))
     dsartist = dsshow(
         df,
