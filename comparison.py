@@ -28,9 +28,31 @@ filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
+fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
+
+#Create function that returns sigma value based on filter size index
+def sigma_value(filter_size):
+  # Get the index of the filter_size
+  index = filter_sizes.index(filter_size)
+  actual_filter_size = fwidth_n[index]
+  return np.sqrt(actual_filter_size ** 2 / 12.0)
+
+def exclude_boundary(filter_size):
+  #Get the index of the filter_size
+  index = filter_sizes.index(filter_size)
+  actual_filter_size = fwidth_n[index]
+  # Exclusion boundaries
+  base_exclusion_left = 0
+  base_exclusion_right = 0
+  additional_exclusion = 0.5 * actual_filter_size  # Adjust according to cell size if needed
+
+  left_exclusion = base_exclusion_left + additional_exclusion
+  right_exclusion = base_exclusion_right + additional_exclusion
+  return int(left_exclusion), int(right_exclusion)
+
 def phi_field_res(filter_size):
-  phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)[2]
-  phi_res = gaussian_filter(phi, sigma=filter_size)
+  phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary(filter_size))[2]
+  phi_res = gaussian_filter(phi, sigma=sigma_value(filter_size))
   return phi_res
 
 def phi_field_NN(filter_size):
