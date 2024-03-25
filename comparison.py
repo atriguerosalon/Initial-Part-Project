@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from data_preparation import create_custom_cmap
 from gaussian_filter_apply import apply_gaussian
 import datashader as ds
