@@ -26,10 +26,6 @@ def apply_gaussian(sigma, exclude_boundaries):
 
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
 
-    wcr_field_star = wcr_field_star.T
-    ct_field_star = ct_field_star.T
-    phi = phi.T
-
     wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma)
     ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma)
     phi_filtered = gaussian_filter(phi, sigma=sigma)

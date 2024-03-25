@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
-import mpl_scatter_density # adds projection='scatter_density'
 from matplotlib.colors import LinearSegmentedColormap
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -16,17 +15,20 @@ import math
 #import NN from data_preparation
 #import DNS
 # spatial constants
-exclude_boundaries = 0
-nx, ny = 384-2*exclude_boundaries, 384-2*exclude_boundaries
+exclude_boundaries_L = 40
+exclude_boundaries_R =40
+exclude_boundaries=(exclude_boundaries_L, exclude_boundaries_R)
+nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
 lx, ly = 0.01, 0.01 #[m]
 dx, dy = lx/(nx-1), ly/(ny-1)
-x = np.arange(0,lx+dx,dx)
+x = np.arange(dx*exclude_boundaries_L,lx+dx,dx)
 y = np.arange(0,ly+dy,dy)
 filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 
+
 # data load
 def phi_field_res(filter_size):
-  phi_res = apply_gaussian(filter_size*10, exclude_boundaries)[2]
+  phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
   return phi_res
 
 def phi_field_NN(filter_size):
