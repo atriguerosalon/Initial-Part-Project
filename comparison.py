@@ -31,7 +31,7 @@ def phi_field_res(filter_size):
 
 def phi_field_NN(filter_size):
   phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
-  phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1]
+  phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1].T
   return phi_NN_bound
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
@@ -53,7 +53,7 @@ plt.pcolor(x,y, phi_field_res(1.0))
 plt.colorbar()
 plt.show()
 '''
-
+'''
 #This is really bad timewise lmaoooo:
 def scatter_plot_run1(filter_size):
   nbins=500
@@ -71,7 +71,7 @@ def scatter_plot_run1(filter_size):
   zi = k(np.vstack([xi.flatten(), yi.flatten()]))
   # Make the plot
   plt.pcolormesh(xi, yi, zi.reshape(xi.shape), cmap=hot)
-  
+  '''
   """
   density = ax.scatter_density(phi_field_res(filter_size), phi_field_NN(filter_size), cmap=hot)
   plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)

@@ -14,9 +14,9 @@ sigma_steps = np.arange(1, 2, 0.5)
 #Show size of wcr_field_star
 
 #Now rotate around the y=x axis
-wcr_field_star = wcr_field_star.T
-ct_field_star = ct_field_star.T
-phi = phi.T
+wcr_field_star = wcr_field_star
+ct_field_star = ct_field_star
+phi = phi
 
 # Apply Gaussian filter to the fields
 def apply_gaussian(sigma, exclude_boundaries):
