@@ -27,13 +27,11 @@ filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 # data load
 def phi_field_res(filter_size):
   phi_res = apply_gaussian(filter_size, exclude_boundaries)[2]
-  print("phi_res shape is"+str(phi_res.shape))
   return phi_res
 
 def phi_field_NN(filter_size):
   phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
   phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1]
-  print("phi_NN shape is"+str(phi_NN_bound.shape))
   return phi_NN_bound
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
