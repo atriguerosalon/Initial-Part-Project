@@ -41,6 +41,7 @@ def exclude_boundary(filter_size):
   left_exclusion = base_exclusion_left + additional_exclusion
   right_exclusion = base_exclusion_right + additional_exclusion
   return int(left_exclusion), int(right_exclusion)
+
 def get_boundaries(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
   nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
@@ -71,6 +72,7 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0.6, '#D22B2B'),
     (1, '#D22B2B'),
 ], N=256)
+
 
 def using_datashader(ax, filter_size):
     #print(phi_field_NN(filter_size))
