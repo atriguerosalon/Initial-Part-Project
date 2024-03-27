@@ -41,6 +41,7 @@ def exclude_boundary(filter_size):
   left_exclusion = base_exclusion_left + additional_exclusion
   right_exclusion = base_exclusion_right + additional_exclusion
   return int(left_exclusion), int(right_exclusion)
+
 def get_boundaries(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
   nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
@@ -63,31 +64,54 @@ def phi_field_NN(filter_size):
 
 hot = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
-    (1e-20, '#4B006E'),
-    (0.03, '#4169E1'),
-    (0.15, '#adff5a'),
+    (1e-40, '#4B006E'),
+    (0.1, '#4169E1'),
+    (0.2, '#adff5a'),
     (0.3, '#ffff5a'),
-    (0.39, '#ff9932'),
+    (0.4, '#ff9932'),
     (0.6, '#D22B2B'),
     (1, '#D22B2B'),
 ], N=256)
 
+
 def using_datashader(ax, filter_size):
-    print(phi_field_NN(filter_size))
-    df = pd.DataFrame(dict(x=phi_field_res(filter_size).flatten(), y=phi_field_NN(filter_size).flatten()))
+    #print(phi_field_NN(filter_size))
+    x=phi_field_res(filter_size).flatten()
+    max_x_val=np.max(x)
+    print(max_x_val)
+    y=phi_field_NN(filter_size).flatten()
+    divisions=1000
+    x_vals=np.arange(0, max_x_val-1/divisions*max_x_val, 1/divisions*max_x_val)
+    y_vals=np.array([])
+    for i in range(divisions-1):
+      globals()[f"interval_indices{i}"]=np.array([])
+      globals()[f"interval_y_vals{i}"]=np.array([])
+    for i in range(len(x)):
+      interval_val=int((x[i]*divisions))
+      globals()[f"interval_indices{interval_val}"]=np.append(globals()[f"interval_indices{interval_val}"], i)
+    for i in range(divisions-1):
+      for j in globals()[f"interval_indices{i}"]:
+        if j!=None:
+          globals()[f"interval_y_vals{i}"]=np.append(globals()[f"interval_y_vals{i}"], y[int(j)])
+        else:
+          globals()[f"interval_y_vals{i}"]=np.append(globals()[f"interval_y_vals{i}"], 0)
+      if globals()[f"interval_y_vals{i}"].size==0:
+        y_vals=np.append(y_vals,0)
+      else:
+        y_vals=np.append(y_vals,np.mean(globals()[f"interval_y_vals{i}"]))
+    df = pd.DataFrame({'x':x_vals, 'y':y_vals})
     dsartist = dsshow(
         df,
         ds.Point("x", "y"),
         ds.count(),
-        vmin=0,
-        vmax=35,
+        width_scale=0.15,
+        height_scale=0.15,
         norm="linear",
         cmap=hot,
         ax=ax,
     )
-
 fig, ax = plt.subplots()
-using_datashader(ax, 1.0)
+using_datashader(ax, 0.5)
 plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
 plt.xlim(0,1)
 plt.ylim(0,1)
@@ -119,7 +143,7 @@ def plot_comparison_graphs():
     plt.pcolor(x,y, phi_field_NN(filter_sizes[i]), cmap='jet')
   plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.035)
   plt.show()
-plot_comparison_graphs()
+#plot_comparison_graphs()
 
 def calculate_pearson_r(filter_size):
   beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
@@ -154,7 +178,7 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$")
   plt.show()
-comparison_plot('MSE')
+#comparison_plot('MSE')
 '''
 MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
 pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
