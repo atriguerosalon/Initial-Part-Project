@@ -14,7 +14,7 @@ from scipy.ndimage import gaussian_filter
 #import DNS
 # spatial constants
 filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
-
+grid_size_mm=10
 
 # Data paths
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
@@ -44,10 +44,10 @@ def exclude_boundary(filter_size):
 def get_boundaries(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
   nx, ny = 384-(exclude_boundaries_L+exclude_boundaries_R), 384
-  lx, ly = 0.01, 0.01 #[m]
-  dx, dy = lx/(nx-1), ly/(ny-1)
-  x = np.arange(dx*exclude_boundaries_L,lx+dx,dx)
-  y = np.arange(0,ly+dy,dy)
+  lx, ly = 0.01*nx/384, 0.01 #[m]
+  dx, dy = lx/(nx), ly/(ny)
+  x = np.arange(exclude_boundaries_L,385-exclude_boundaries_R,1)*10/384 #[mm]
+  y = np.arange(0,ly+dy,dy)*1000 #[mm] - Ik this is messy but idk why it dont work if I just change lx=10
   return x,y
 
 def phi_field_res(filter_size):
@@ -85,6 +85,7 @@ def using_datashader(ax, filter_size):
         cmap=hot,
         ax=ax,
     )
+
 fig, ax = plt.subplots()
 using_datashader(ax, 1.0)
 plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
@@ -97,19 +98,26 @@ plt.show()
 # scatter_plot_run1(1.0)
 white_jet = create_custom_cmap()
 def plot_comparison_graphs():
+  plt.rc('xtick', labelsize=8)
+  plt.rc('ytick', labelsize=8)
+  plt.subplot(2,len(filter_sizes),1).text(-5, 4.75, "$\\overline{\\Phi}_{res}$", fontsize=16, fontfamily='serif')
+  plt.subplot(2,len(filter_sizes),1+len(filter_sizes)).text(-5, 4.75, "$\\overline{\\Phi}_{NN}$", fontsize=16, fontfamily='serif')
   for i in range(len(filter_sizes)):
-    if i==0:
-      plt.subplot(2,len(filter_sizes),i+1).text(-171, 171, "$\\overline{\\Phi}_{res}$", fontsize=16, fontfamily='serif')
-      plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).text(-171, 171, "$\\overline{\\Phi}_{NN}$", fontsize=16, fontfamily='serif')
-    plt.subplot(2,len(filter_sizes),i+1).axes.get_xaxis().set_visible(False)
-    plt.subplot(2,len(filter_sizes),i+1).axes.get_yaxis().set_visible(False)
-    plt.pcolor(phi_field_res(filter_sizes[i]), cmap='jet')
-    plt.colorbar(location='top').set_ticks([0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10])
-    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
-    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
-    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).set_title(str(filter_sizes[i]), y=-0.15)
-    plt.pcolor(phi_field_NN(filter_sizes[i]), cmap='jet')
-  plt.suptitle("$\\Delta /\\delta_{th}$", y=0.04)
+    plt.subplot(2,len(filter_sizes),i+1).axes.set_ylabel('y (mm)', labelpad=-4)
+    plt.subplot(2,len(filter_sizes),i+1).axes.set_xlabel('x (mm)')
+    x,y =get_boundaries(filter_sizes[i])
+    plt.pcolor(x,y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
+    plt.subplot(2,len(filter_sizes),i+1).axes.set_xticks([2,4,6,8])
+    tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
+    tick_labels=np.full(len(tick_pos), "")
+    tick_labels[0]=str(tick_pos[0])
+    plt.colorbar(location='top').set_ticks(tick_pos, labels=tick_labels, minor=True)
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.set_xlabel('x (mm)')
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).axes.set_xticks([2,4,6,8])
+    plt.subplot(2,len(filter_sizes),i+1+len(filter_sizes)).text(s=str(filter_sizes[i]), x=150, y=-80)
+    plt.pcolor(x,y, phi_field_NN(filter_sizes[i]), cmap='jet')
+  plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.035)
   plt.show()
 plot_comparison_graphs()
 
