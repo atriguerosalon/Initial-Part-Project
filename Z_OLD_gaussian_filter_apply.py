@@ -8,16 +8,15 @@ import os
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
-exclude_boundaries = 5
+exclude_boundaries = (5,5)
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
 sigma_steps = np.arange(1, 2, 0.5)
 #Show size of wcr_field_star
-print(f'size of wcr_field_star: {wcr_field_star.shape}')
 
 #Now rotate around the y=x axis
-wcr_field_star = wcr_field_star.T
-ct_field_star = ct_field_star.T
-phi = phi.T
+wcr_field_star = wcr_field_star
+ct_field_star = ct_field_star
+phi = phi
 
 # Apply Gaussian filter to the fields
 def apply_gaussian(sigma, exclude_boundaries):
@@ -25,10 +24,6 @@ def apply_gaussian(sigma, exclude_boundaries):
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries)
-
-    wcr_field_star = wcr_field_star.T
-    ct_field_star = ct_field_star.T
-    phi = phi.T
 
     wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma)
     ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma)
@@ -43,12 +38,12 @@ def run_apply_gaussian():
         # Now, visualize the filtered field
         plt.figure(figsize=(10, 5))
         plt.subplot(1, 2, 1)
-        plt.imshow(wcr_field_star, cmap='inferno', origin='lower')
+        plt.imshow(wcr_field_star, cmap='hot', origin='lower')
         plt.title('Original ωcT Field')
         plt.colorbar()
 
         plt.subplot(1, 2, 2)
-        plt.imshow(wcr_field_filtered, cmap='inferno', origin='lower')
+        plt.imshow(wcr_field_filtered, cmap='hot', origin='lower')
         plt.title(f'Filtered ωcT Field (σ={sigma})')
         plt.colorbar()
 
@@ -59,6 +54,3 @@ def run_apply_gaussian():
         plt.savefig('figs/' + f'wcr_field_filtered_sigma_{sigma}_new.pdf', dpi=300)
         #Save figure as pdf with sigma value on the filename
         #plt.savefig(f'wcr_field_filtered_sigma_{sigma}.pdf')
-
-
-
