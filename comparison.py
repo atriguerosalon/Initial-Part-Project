@@ -9,6 +9,10 @@ from datashader.mpl_ext import dsshow
 import pandas as pd
 from scipy.ndimage import gaussian_filter
 
+# Add desired font settings
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'STIXGeneral'
+
 
 #import NN from data_preparation
 #import DNS
@@ -84,9 +88,10 @@ hot = LinearSegmentedColormap.from_list('white_viridis', [
 
 def using_datashader(ax, filter_size):
     #print(phi_field_NN(filter_size))
-    x=phi_field_res(filter_size).flatten()
-    max_x_val=np.max(x)
+    x=phi_field_res(filter_size).flatten()[::-1]
     y=phi_field_NN(filter_size).flatten()
+    """
+    max_x_val=np.max(x)
     divisions=1000
     x_vals=np.arange(0, max_x_val-1/divisions*max_x_val, 1/divisions*max_x_val)
     y_vals=np.array([])
@@ -107,6 +112,8 @@ def using_datashader(ax, filter_size):
       else:
         y_vals=np.append(y_vals,np.mean(globals()[f"interval_y_vals{i}"]))
     df = pd.DataFrame({'x':x_vals, 'y':y_vals})
+    """
+    df=pd.DataFrame({'x':x, 'y':y})
     dsartist = dsshow(
         df,
         ds.Point("x", "y"),
@@ -119,7 +126,7 @@ def using_datashader(ax, filter_size):
     )
 """
 fig, ax = plt.subplots()
-using_datashader(ax, 0.5)
+using_datashader(ax, 1.0)
 plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
 plt.xlim(0,1)
 plt.ylim(0,1)
@@ -129,32 +136,105 @@ plt.show()
 """
 # scatter_plot_run1(1.0)
 white_jet = create_custom_cmap()
+
+def plot_comparison_graphs1():
+    plt.rc('xtick', labelsize=8)
+    plt.rc('ytick', labelsize=8)
+    fig, axs = plt.subplots(4, len(filter_sizes), figsize=(10, 8), gridspec_kw={'height_ratios': [0.1, 1, 1, 1]})
+    
+    for i in range(len(filter_sizes)):
+        # Plot phi_field_res
+        x, y = get_boundaries(filter_sizes[i])
+        ax = axs[1, i]
+        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
+        ax.set_xticks([])
+        if i == 0:
+            ax.set_ylabel('y (mm)', labelpad=-4)
+        else:
+            ax.get_yaxis().set_visible(False)
+
+        # Plot phi_field_NN
+        ax = axs[2, i]
+        pcm_nn = ax.pcolor(x, y, phi_field_NN(filter_sizes[i]), cmap='jet')
+        ax.set_xticks([])
+        if i == 0:
+            ax.set_ylabel('y (mm)', labelpad=-4)
+        else:
+            ax.get_yaxis().set_visible(False)
+
+        # Plot phi_field_0th
+        ax = axs[3, i]
+        pcm_0th = ax.pcolor(x, y, phi_field_0th(filter_sizes[i]), cmap='jet')
+        ax.set_xticks([2, 4, 6, 8])
+        if i == 0:
+            ax.set_ylabel('y (mm)', labelpad=-4)
+        else:
+            ax.get_yaxis().set_visible(False)
+        ax.set_xlabel('x (mm)')
+        ax.text(s=str(filter_sizes[i]), x=4.25, y=-3.5)
+
+    # Add colorbar subplot for each column
+    for i in range(len(filter_sizes)):
+        
+        tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
+        tick_labels=np.full(len(tick_pos), "")
+        tick_labels[0]=str(tick_pos[0])
+        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
+        cbar_ax = fig.add_subplot(4, len(filter_sizes), i+1)
+        cbar = plt.colorbar(pcm_res, cax=cbar_ax, orientation='horizontal')
+        cbar.set_ticks(tick_pos, labels=tick_labels, minor=True)  # Set ticks for the colorba
+        # Hide colorbar subplot axes
+        cbar_ax.axis('off')
+
+    # Add titles
+    axs[1, 0].set_title("$\\overline{\\Phi}_{res}$")
+    axs[2, 0].set_title("$\\overline{\\Phi}_{NN}$")
+    axs[3, 0].set_title("$\\overline{\\Phi}_{0th}$")
+    plt.suptitle("$\\Delta /\\delta_{th}$", x=0.52, y=0.020)
+
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_comparison_graphs():
   plt.rc('xtick', labelsize=8)
   plt.rc('ytick', labelsize=8)
-  plt.subplot(3,len(filter_sizes),1).text(-5, 4.75, "$\\overline{\\Phi}_{res}$", fontsize=16, fontfamily='serif')
-  plt.subplot(3,len(filter_sizes),1+len(filter_sizes)).text(-5, 4.75, "$\\overline{\\Phi}_{NN}$", fontsize=16, fontfamily='serif')
-  plt.subplot(3,len(filter_sizes),1+len(filter_sizes)*2).text(-5, 4.75, "$\\overline{\\Phi}_{0th}$", fontsize=16, fontfamily='serif')
+  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)).text(-5, 4.75, "$\\overline{\\Phi}_{res}$", fontsize=16, fontfamily='serif')
+  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)*2).text(-5, 4.75, "$\\overline{\\Phi}_{NN}$", fontsize=16, fontfamily='serif')
+  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)*3).text(-5, 4.75, "$\\overline{\\Phi}_{0th}$", fontsize=16, fontfamily='serif')
   for i in range(len(filter_sizes)):
     if i==0:
-      plt.subplot(3,len(filter_sizes),i+1).axes.set_ylabel('y (mm)', labelpad=-4)
-    plt.subplot(3,len(filter_sizes),i+1).axes.set_xticks([2,4,6,8])
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
+    else:
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
     x,y =get_boundaries(filter_sizes[i])
-    plt.pcolor(x[::-1],y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
+    plt.pcolor(x,y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
+    print(phi_field_res(filter_sizes[i]).size)
     tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
     tick_labels=np.full(len(tick_pos), "")
     tick_labels[0]=str(tick_pos[0])
-    plt.colorbar(location='top').set_ticks(tick_pos, labels=tick_labels, minor=True)
+    cbar_ax = plt.subplot(4, len(filter_sizes), i+1, aspect=0.1*(phi_field_res(filter_sizes[i]).max()))
+    cbar = plt.colorbar(cax=cbar_ax, orientation='horizontal')
+    cbar.set_ticks(tick_pos, labels=tick_labels, minor=True)  # Set ticks for the colorba
     if i==0:
-      plt.subplot(3,len(filter_sizes),i+1+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
-    plt.subplot(3,len(filter_sizes),i+1+len(filter_sizes)).axes.set_xticks([2,4,6,8])
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
+    else:
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.get_yaxis().set_visible(False)
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.set_xticks([2,4,6,8])
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.get_xaxis().set_visible(False)
     plt.pcolor(x,y, phi_field_NN(filter_sizes[i]), cmap='jet')
     if i==0:
-      plt.subplot(3,len(filter_sizes),i+1+len(filter_sizes)*2).axes.set_ylabel('y (mm)', labelpad=-4)
-    plt.subplot(3,len(filter_sizes),i+1+len(filter_sizes)*2).axes.set_xticks([2,4,6,8])
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_ylabel('y (mm)', labelpad=-4)
+    else:
+      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+2*len(filter_sizes)).axes.get_yaxis().set_visible(False)
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_xticks([2,4,6,8])
     plt.pcolor(x,y, phi_field_0th(filter_sizes[i]), cmap='jet')
-    plt.subplot(3,len(filter_sizes),i+1+len(filter_sizes)*2).text(s=str(filter_sizes[i]), x=50, y=-30)
-  plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.035)
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).text(s=str(filter_sizes[i]), x=4.25, y=-3.5)
+    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_xlabel('x (mm)')
+    plt.subplot(4, len(filter_sizes),i+1+len(filter_sizes)*3)
+    
+  plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.020)
   plt.show()
 plot_comparison_graphs()
 
