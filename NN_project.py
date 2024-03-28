@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.ndimage
-from keras.models import load_model
+from keras.models import load_model, save_model
 
 # spatial constants
 nx, ny = 384, 384
@@ -53,7 +53,7 @@ data_3 = data_3 / (2.0 * DTH)
 X = np.stack((data_1_filtered.flatten(), data_2_filtered.flatten(), data_3.flatten()), axis=1)
 
 # Model load
-model = load_model('phi_nn_epoch_00240.h5', compile=False)
+model = load_model('phi_nn_epoch_00240.h5')
 
 # Prediction
 phi_nn = model.predict(X, batch_size=16, verbose=2)
