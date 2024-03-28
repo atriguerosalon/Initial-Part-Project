@@ -9,7 +9,7 @@ plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
 # filter size in cell number - 25 means length of 25 cells
-fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
+fwidth_n = np.array([25, 37, 50, 62, 74, 86, 99])
 filter_size = fwidth_n[2]
 
 # std. deviation
@@ -113,5 +113,6 @@ cbar.ax.tick_params(labelsize=12)
 #Save figure as pdf
 if not os.path.exists('final_figs'):
     os.makedirs('final_figs')
-plt.savefig('final_figs/' + f'Unfiltered_Filtered_plots_sigma_{sigma_value}_new.pdf', dpi=300)
+#Save fig with sigma value up to two decimal places
+plt.savefig('final_figs/' + f'Final_Unfiltered_Filtered_plots_sigma_{sigma_value:.2f}_new.pdf', dpi=300)
 plt.show()
