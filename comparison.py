@@ -146,8 +146,8 @@ def plot_comparison_graphs1():
   row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(3):
-    axs[i+1,0].text(-4, 4.5, row_titles[i], fontsize=16, fontfamily='serif')
-    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4)
+    axs[i+1,0].text(-4.5, 4.5, row_titles[i], fontsize=18, fontfamily='serif')
+    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4, fontsize=14)
   #hiding unnecessary axes
     for j in range(0,len(filter_sizes)):
       if i!=2:
@@ -157,10 +157,10 @@ def plot_comparison_graphs1():
   
   for i in range(len(filter_sizes)):
     #setting up x-axis and column titles (filter size used)
-    axs[3,i].text(s=str(filter_sizes[i]), x=4.5, y=-3)
+    axs[3,i].text(s=str(filter_sizes[i]), x=4.25, y=-3.25, fontsize=14)
     x,y =get_boundaries(filter_sizes[i])
     axs[3,i].axes.set_xticks([2,4,6,8])
-    axs[3,i].axes.set_xlabel('x (mm)',labelpad=-0.5)
+    axs[3,i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=14)
 
     #plotting actual graphs
 
@@ -177,7 +177,7 @@ def plot_comparison_graphs1():
     axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False)
   
   #title, fig saving, and showing
-  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.030)
+  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.03, fontsize=18)
   plt.savefig("Graph Comparison")
   plt.show()
 
