@@ -138,63 +138,48 @@ plt.show()
 white_jet = create_custom_cmap()
 
 def plot_comparison_graphs1():
-    plt.rc('xtick', labelsize=8)
-    plt.rc('ytick', labelsize=8)
-    fig, axs = plt.subplots(4, len(filter_sizes), figsize=(10, 8), gridspec_kw={'height_ratios': [0.1, 1, 1, 1]})
-    
-    for i in range(len(filter_sizes)):
-        # Plot phi_field_res
-        x, y = get_boundaries(filter_sizes[i])
-        ax = axs[1, i]
-        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
+  height_ratios=[0.1,2,2,2]
+  width_ratios=[]
+  for i in range(len(filter_sizes)):
+     width_ratios.append(len(get_boundaries(filter_sizes[i])[0]))
+  fig, axs=plt.subplots(4,len(filter_sizes), gridspec_kw={'height_ratios': height_ratios, 'width_ratios': width_ratios})
+  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
+  #setting y-axis labels and row titles (type of analysis conducted)
+  for i in range(3):
+    axs[i+1,0].text(-4, 4.5, row_titles[i], fontsize=16, fontfamily='serif')
+    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4)
+  #hiding unnecessary axes
+    for j in range(0,len(filter_sizes)):
+      if i!=2:
+        axs[i+1, j].get_xaxis().set_visible(False)
+      if j!=0:
+        axs[i+1,j].axes.get_yaxis().set_visible(False)
+  
+  for i in range(len(filter_sizes)):
+    #setting up x-axis and column titles (filter size used)
+    axs[3,i].text(s=str(filter_sizes[i]), x=4.5, y=-3)
+    x,y =get_boundaries(filter_sizes[i])
+    axs[3,i].axes.set_xticks([2,4,6,8])
+    axs[3,i].axes.set_xlabel('x (mm)',labelpad=-0.5)
 
-        # Plot phi_field_NN
-        ax = axs[2, i]
-        pcm_nn = ax.pcolor(x, y, phi_field_NN(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
+    #plotting actual graphs
 
-        # Plot phi_field_0th
-        ax = axs[3, i]
-        pcm_0th = ax.pcolor(x, y, phi_field_0th(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([2, 4, 6, 8])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
-        ax.set_xlabel('x (mm)')
-        ax.text(s=str(filter_sizes[i]), x=4.25, y=-3.5)
+    axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[2,i].imshow(np.flipud(phi_field_NN(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
 
-    # Add colorbar subplot for each column
-    for i in range(len(filter_sizes)):
-        
-        tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
-        tick_labels=np.full(len(tick_pos), "")
-        tick_labels[0]=str(tick_pos[0])
-        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
-        cbar_ax = fig.add_subplot(4, len(filter_sizes), i+1)
-        cbar = plt.colorbar(pcm_res, cax=cbar_ax, orientation='horizontal')
-        cbar.set_ticks(tick_pos, labels=tick_labels, minor=True)  # Set ticks for the colorba
-        # Hide colorbar subplot axes
-        cbar_ax.axis('off')
-
-    # Add titles
-    axs[1, 0].set_title("$\\overline{\\Phi}_{res}$")
-    axs[2, 0].set_title("$\\overline{\\Phi}_{NN}$")
-    axs[3, 0].set_title("$\\overline{\\Phi}_{0th}$")
-    plt.suptitle("$\\Delta /\\delta_{th}$", x=0.52, y=0.020)
-
-    plt.tight_layout()
-    plt.show()
-
+    #colorbars
+    tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
+    tick_labels=["" for i in tick_pos]
+    tick_labels[0]=str(0)
+    tick_labels[-1]=str(np.floor(phi_field_res(filter_sizes[i]).max()*10)/10) #idk why this dont work
+    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal')
+    axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False)
+  
+  #title, fig saving, and showing
+  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.030)
+  plt.savefig("Graph Comparison")
+  plt.show()
 
 def plot_comparison_graphs():
   plt.rc('xtick', labelsize=8)
@@ -236,7 +221,7 @@ def plot_comparison_graphs():
     
   plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.020)
   plt.show()
-plot_comparison_graphs()
+plot_comparison_graphs1()
 
 def calculate_pearson_r(filter_size):
   beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
