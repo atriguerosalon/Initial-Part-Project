@@ -137,7 +137,7 @@ plt.xlabel("$\\overline{\\Phi}_{res}$")
 plt.savefig(f"NN_vs._res_Scatterplot_Averaged_{divisions}.png")
 plt.show()
 
-#remake scatterplots
+#still need to remake scatterplots
 
 def plot_comparison_graphs():
   height_ratios=[0.1,2,2,2]
