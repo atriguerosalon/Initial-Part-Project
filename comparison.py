@@ -1,19 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
-from matplotlib.colors import LinearSegmentedColormap
-import mpl_scatter_density
+from scipy.ndimage import gaussian_filter
+from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value
 import scipy as sp
-from data_preparation import create_custom_cmap, filename_to_field, calculate_phi_0th_order, sigma_value
+
+#may or may not use:
+import mpl_scatter_density
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
-from scipy.ndimage import gaussian_filter
+
 
 # Add desired font settings
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
-
 
 #import NN from data_preparation
 #import DNS
@@ -75,18 +76,6 @@ def phi_field_0th(filter_size):
   return gaussian_filter(unfiltered_0th, sigma=sigma_value(filter_size))
 
 
-hot = LinearSegmentedColormap.from_list('white_viridis', [
-    (0, '#ffffff'),
-    (1e-20, '#000000'),
-    (0.04, '#7851A9'),
-    (0.06, '#4169E1'),
-    (0.07, '#adff5a'),
-    (0.09, '#ffff5a'),
-    (0.15, '#ff9932'),
-    (1, '#D22B2B'),
-], N=256)
-
-
 def scatterplots(filter_size, ax1=None, ax2=None):
   x=phi_field_res(filter_size)[::-1].flatten()
   y=phi_field_NN(filter_size).flatten()
@@ -143,17 +132,20 @@ def scatterplots(filter_size, ax1=None, ax2=None):
         ax=ax,
     )
     """
+  scatter_s=0.05
+  lw=0.8
+  label_size=14
   #plotting averaged
   if ax1 is None:
       fig1, ax1 = plt.subplots()
   else:
       fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
-  ax1.scatter(x_vals, y_vals, s=0.05, color='k')
-  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=0.8)
+  ax1.scatter(x_vals, y_vals, s=scatter_s, color='k')
+  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
   ax1.set_xlim(0, 1)
   ax1.set_ylim(0, 1)
-  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=14)
-  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=14)
+  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
   if ax1 is None:
       fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
       plt.close(fig1)  # Close the figure if created within the function
@@ -163,18 +155,19 @@ def scatterplots(filter_size, ax1=None, ax2=None):
       fig2, ax2 = plt.subplots()
   else:
       fig2 = ax2.get_figure()  # Retrieve the figure associated with the provided axis
-  ax2.scatter(x, y, s=0.05, color='k')
-  ax2.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=0.8)
+  ax2.scatter(x, y, s=scatter_s, color='k')
+  ax2.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
   ax2.set_xlim(0, 1)
   ax2.set_ylim(0, 1)
-  ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=14)
-  ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=14)
+  ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
   if ax2 is None:
       fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Reg_{filter_size}.png")
       plt.close(fig1)  # Close the figure if created within the function
   return fig1, ax1, fig2, ax2
 
 def compare_filter_sizes():
+  row_text_size=12
   filters_for_scatter=[0.5,1.0,1.5,2.0]
   fig, axs= plt.subplots(2, 4)
   axs=axs.ravel()
@@ -183,7 +176,7 @@ def compare_filter_sizes():
   row_titles=["Regular", "Averaged"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
-    axs[i*len(filters_for_scatter)].text(-0.52, 0.5, row_titles[i], fontsize=12, fontfamily='serif')
+    axs[i*len(filters_for_scatter)].text(-0.52, 0.5, row_titles[i], fontsize=row_text_size, fontfamily='serif')
   #hiding unnecessary axes
     for j in range(len(filters_for_scatter)):
       if i!=(len(row_titles)-1):
@@ -199,9 +192,10 @@ def compare_filter_sizes():
   plt.savefig("Scatterplots Avg. Vs. Reg Varying Filter Sizes.png")
   plt.show()
 
-#compare_filter_sizes()
+compare_filter_sizes()
 
 def plot_comparison_graphs():
+  rc_textsize=14
   height_ratios=[0.1,2,2,2]
   width_ratios=[]
   for i in range(len(filter_sizes)):
@@ -211,7 +205,7 @@ def plot_comparison_graphs():
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
     axs[i+1,0].text(-4.5, 4.5, row_titles[i], fontsize=18, fontfamily='serif')
-    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4, fontsize=14)
+    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4, fontsize=rc_textsize)
   #hiding unnecessary axes
     for j in range(len(filter_sizes)):
       if i!=2:
@@ -221,10 +215,10 @@ def plot_comparison_graphs():
   
   for i in range(len(filter_sizes)):
     #setting up x-axis and column titles (filter size used)
-    axs[len(row_titles),i].text(s=str(filter_sizes[i]), x=4.25, y=-3.25, fontsize=14)
+    axs[len(row_titles),i].text(s=str(filter_sizes[i]), x=4.25, y=-3.25, fontsize=rc_textsize)
     x,y =get_boundaries(filter_sizes[i])
     axs[len(row_titles),i].axes.set_xticks([2,4,6,8])
-    axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=14)
+    axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=rc_textsize)
 
     #plotting actual graphs
 
@@ -261,9 +255,9 @@ def calculate_pearson_r(filter_size, NN_or_0th):
   return pearson_r
 
 def calculate_MSE(filter_size, NN_or_0th):
-  beep = np.array([val for sublist in  phi_field_res(filter_size)[::-1] for val in sublist])
-  boop = np.array([val for sublist in phi_field_NN(filter_size) for val in sublist])
-  bob = np.array([val for sublist in phi_field_0th(filter_size) for val in sublist])
+  beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
+  boop = np.array([boo for bee in phi_field_NN(filter_size) for boo in bee])
+  bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
   MSE = mean_squared_error(beep, boop)
   if NN_or_0th=='NN':
     MSE = mean_squared_error(beep, boop)
