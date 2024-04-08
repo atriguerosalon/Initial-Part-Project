@@ -150,6 +150,24 @@ def scatterplots(filter_size, ax1=None, ax2=None):
       fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
       plt.close(fig1)  # Close the figure if created within the function
 
+  #trying Savitz-Golay filtering
+  """
+  if ax1 is None:
+    fig1, ax1 = plt.subplots()
+  else:
+    fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
+  y_filtered=sp.signal.savgol_filter(y, 5001, 7)
+  ax1.scatter(x, y_filtered, s=scatter_s, color='k')
+  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
+  ax1.set_xlim(0, 1)
+  ax1.set_ylim(0, 1)
+  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
+  if ax1 is None:
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Filtered_{filter_size}.png")
+      plt.close(fig1)  # Close the figure if created within the function
+  """
+      
   #plotting non-averaged
   if ax2 is None:
       fig2, ax2 = plt.subplots()
@@ -298,4 +316,4 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$", fontsize=16)
   plt.show()
-comparison_plot('Pearson')
+#comparison_plot('Pearson')
