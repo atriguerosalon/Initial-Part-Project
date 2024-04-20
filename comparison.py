@@ -147,7 +147,7 @@ def scatterplots(filter_size, ax1=None, ax2=None):
   ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
   ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
   if ax1 is None:
-      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
       plt.close(fig1)  # Close the figure if created within the function
 
   #trying Savitz-Golay filtering
@@ -164,7 +164,7 @@ def scatterplots(filter_size, ax1=None, ax2=None):
   ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
   ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
   if ax1 is None:
-      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Filtered_{filter_size}.png")
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Filtered_{filter_size}.png")
       plt.close(fig1)  # Close the figure if created within the function
   """
       
@@ -191,7 +191,7 @@ def compare_filter_sizes():
   axs=axs.ravel()
   for i, filter_size in enumerate(filters_for_scatter):
     scatterplots(filter_size, ax2=axs[i], ax1=axs[i+len(filters_for_scatter)])
-  row_titles=["Regular", "Averaged"]
+  row_titles=["Unfiltered", "Filtered"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
     axs[i*len(filters_for_scatter)].text(-0.52, 0.5, row_titles[i], fontsize=row_text_size, fontfamily='serif')
@@ -207,7 +207,7 @@ def compare_filter_sizes():
     axs[len(filters_for_scatter)+i].text(s=str(filters_for_scatter[i]), x=.45, y=-.28, fontsize=12)
   fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.038, fontsize=18)
   plt.tight_layout()  # Adjust layout for better spacing
-  plt.savefig("Scatterplots Avg. Vs. Reg Varying Filter Sizes.png")
+  plt.savefig("Filtering w. Diff Filter Sizes.png")
   plt.show()
 
 compare_filter_sizes()
