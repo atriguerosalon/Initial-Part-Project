@@ -1,18 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
-from matplotlib.colors import LinearSegmentedColormap
+from scipy.ndimage import gaussian_filter
+from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value
 import scipy as sp
-from data_preparation import create_custom_cmap, filename_to_field, calculate_phi_0th_order, sigma_value
+
+#may or may not use:
+import mpl_scatter_density
 import datashader as ds
 from datashader.mpl_ext import dsshow
 import pandas as pd
-from scipy.ndimage import gaussian_filter
+
 
 # Add desired font settings
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
-
 
 #import NN from data_preparation
 #import DNS
@@ -74,230 +76,244 @@ def phi_field_0th(filter_size):
   return gaussian_filter(unfiltered_0th, sigma=sigma_value(filter_size))
 
 
-hot = LinearSegmentedColormap.from_list('white_viridis', [
-    (0, '#ffffff'),
-    (1e-40, '#4B006E'),
-    (0.1, '#4169E1'),
-    (0.2, '#adff5a'),
-    (0.3, '#ffff5a'),
-    (0.4, '#ff9932'),
-    (0.6, '#D22B2B'),
-    (1, '#D22B2B'),
-], N=256)
+def scatterplots(filter_size, ax1=None, ax2=None):
+  x=phi_field_res(filter_size)[::-1].flatten()
+  y=phi_field_NN(filter_size).flatten()
+  empty_intervals=[]
+  max_x_val=np.max(x)
+  globals()["divisions"]=5000
+  x_vals=np.linspace(0, 1, divisions)
+  y_vals=np.array([])
+  all_intervals=list(range(divisions-1))
+  
+  for i in range(divisions-1):
+    #creating arrays for every interval
+    globals()[f"interval_indices{i}"]=np.array([])
+    globals()[f"interval_y_vals{i}"]=np.array([])
+  
+  for i in range(len(x)):
+    #assigning every x index to some interval
+    interval_val=int((x[i]*divisions))
+    globals()[f"interval_indices{interval_val}"]=np.append(globals()[f"interval_indices{interval_val}"], i)
+  for i in range(divisions-1):
+    #finding empty intervals
+    if globals()[f"interval_indices{i}"].size==0:
+      empty_intervals.append(i)
+  
+  mask = np.array(empty_intervals)
+  all_intervals = np.array(all_intervals)
+  # Create a mask covering all indices in all_intervals
+  full_mask = np.zeros(len(all_intervals), dtype=bool)
+  full_mask[mask] = True
 
+  # Use the full mask to exclude intervals
+  valid_intervals = all_intervals[~full_mask]
+  for i in valid_intervals:
+    #mapping every y value in valid intervals
+    for j in globals()[f"interval_indices{i}"]:
+        globals()[f"interval_y_vals{i}"] = np.append(globals()[f"interval_y_vals{i}"], y[int(j)]) 
+    #finding the y average in the interval
+    y_vals=np.append(y_vals, np.mean(globals()[f"interval_y_vals{i}"]))
+  
+  #only keeping x_vals of valid intervals
+  x_vals=np.array([x_vals[i] for i in valid_intervals])
 
-def using_datashader(ax, filter_size):
-    #print(phi_field_NN(filter_size))
-    x=phi_field_res(filter_size).flatten()[::-1]
-    y=phi_field_NN(filter_size).flatten()
-    """
-    max_x_val=np.max(x)
-    divisions=1000
-    x_vals=np.arange(0, max_x_val-1/divisions*max_x_val, 1/divisions*max_x_val)
-    y_vals=np.array([])
-    for i in range(divisions-1):
-      globals()[f"interval_indices{i}"]=np.array([])
-      globals()[f"interval_y_vals{i}"]=np.array([])
-    for i in range(len(x)):
-      interval_val=int((x[i]*divisions))
-      globals()[f"interval_indices{interval_val}"]=np.append(globals()[f"interval_indices{interval_val}"], i)
-    for i in range(divisions-1):
-      for j in globals()[f"interval_indices{i}"]:
-        if j!=None:
-          globals()[f"interval_y_vals{i}"]=np.append(globals()[f"interval_y_vals{i}"], y[int(j)])
-        else:
-          globals()[f"interval_y_vals{i}"]=np.append(globals()[f"interval_y_vals{i}"], 0)
-      if globals()[f"interval_y_vals{i}"].size==0:
-        y_vals=np.append(y_vals,0)
-      else:
-        y_vals=np.append(y_vals,np.mean(globals()[f"interval_y_vals{i}"]))
-    df = pd.DataFrame({'x':x_vals, 'y':y_vals})
-    """
-    df=pd.DataFrame({'x':x, 'y':y})
+  #datashader bs - not really much of a point
+  """
+    #df=pd.DataFrame({'x':x, 'y':y})
     dsartist = dsshow(
         df,
         ds.Point("x", "y"),
         ds.count(),
-        width_scale=0.15,
-        height_scale=0.15,
+        width_scale=1,
+        height_scale=1,
         norm="linear",
-        cmap=hot,
+        cmap='inferno',
         ax=ax,
     )
-"""
-fig, ax = plt.subplots()
-using_datashader(ax, 1.0)
-plt.plot([0,1], [0,1], linestyle='--', marker='', c='black', lw=0.8)
-plt.xlim(0,1)
-plt.ylim(0,1)
-plt.ylabel("$\\overline{\\Phi}_{NN}$")
-plt.xlabel("$\\overline{\\Phi}_{res}$")
-plt.show()
-"""
-# scatter_plot_run1(1.0)
-white_jet = create_custom_cmap()
+    """
+  scatter_s=0.05
+  lw=0.8
+  label_size=14
+  #plotting averaged
+  if ax1 is None:
+      fig1, ax1 = plt.subplots()
+  else:
+      fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
+  ax1.scatter(x_vals, y_vals, s=scatter_s, color='k')
+  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
+  ax1.set_xlim(0, 1)
+  ax1.set_ylim(0, 1)
+  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
+  if ax1 is None:
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
+      plt.close(fig1)  # Close the figure if created within the function
 
-def plot_comparison_graphs1():
-    plt.rc('xtick', labelsize=8)
-    plt.rc('ytick', labelsize=8)
-    fig, axs = plt.subplots(4, len(filter_sizes), figsize=(10, 8), gridspec_kw={'height_ratios': [0.1, 1, 1, 1]})
-    
-    for i in range(len(filter_sizes)):
-        # Plot phi_field_res
-        x, y = get_boundaries(filter_sizes[i])
-        ax = axs[1, i]
-        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
+  #trying Savitz-Golay filtering
+  """
+  if ax1 is None:
+    fig1, ax1 = plt.subplots()
+  else:
+    fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
+  y_filtered=sp.signal.savgol_filter(y, 5001, 7)
+  ax1.scatter(x, y_filtered, s=scatter_s, color='k')
+  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
+  ax1.set_xlim(0, 1)
+  ax1.set_ylim(0, 1)
+  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
+  if ax1 is None:
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Filtered_{filter_size}.png")
+      plt.close(fig1)  # Close the figure if created within the function
+  """
+      
+  #plotting non-averaged
+  if ax2 is None:
+      fig2, ax2 = plt.subplots()
+  else:
+      fig2 = ax2.get_figure()  # Retrieve the figure associated with the provided axis
+  ax2.scatter(x, y, s=scatter_s, color='k')
+  ax2.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
+  ax2.set_xlim(0, 1)
+  ax2.set_ylim(0, 1)
+  ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+  ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
+  if ax2 is None:
+      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Reg_{filter_size}.png")
+      plt.close(fig1)  # Close the figure if created within the function
+  return fig1, ax1, fig2, ax2
 
-        # Plot phi_field_NN
-        ax = axs[2, i]
-        pcm_nn = ax.pcolor(x, y, phi_field_NN(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
+def compare_filter_sizes():
+  row_text_size=12
+  filters_for_scatter=[0.5,1.0,1.5,2.0]
+  fig, axs= plt.subplots(2, 4)
+  axs=axs.ravel()
+  for i, filter_size in enumerate(filters_for_scatter):
+    scatterplots(filter_size, ax2=axs[i], ax1=axs[i+len(filters_for_scatter)])
+  row_titles=["Unfiltered", "Filtered"]
+  #setting y-axis labels and row titles (type of analysis conducted)
+  for i in range(len(row_titles)):
+    axs[i*len(filters_for_scatter)].text(-0.52, 0.5, row_titles[i], fontsize=row_text_size, fontfamily='serif')
+  #hiding unnecessary axes
+    for j in range(len(filters_for_scatter)):
+      if i!=(len(row_titles)-1):
+        axs[i*len(filters_for_scatter)+j].get_xaxis().set_visible(False)
+      if j!=0:
+        axs[i*len(filters_for_scatter)+j].axes.get_yaxis().set_visible(False)
+  
+  for i in range(len(filters_for_scatter)):
+    #setting up x-axis and column titles (filter size used)
+    axs[len(filters_for_scatter)+i].text(s=str(filters_for_scatter[i]), x=.45, y=-.28, fontsize=12)
+  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.038, fontsize=18)
+  plt.tight_layout()  # Adjust layout for better spacing
+  plt.savefig("Filtering w. Diff Filter Sizes.png")
+  plt.show()
 
-        # Plot phi_field_0th
-        ax = axs[3, i]
-        pcm_0th = ax.pcolor(x, y, phi_field_0th(filter_sizes[i]), cmap='jet')
-        ax.set_xticks([2, 4, 6, 8])
-        if i == 0:
-            ax.set_ylabel('y (mm)', labelpad=-4)
-        else:
-            ax.get_yaxis().set_visible(False)
-        ax.set_xlabel('x (mm)')
-        ax.text(s=str(filter_sizes[i]), x=4.25, y=-3.5)
-
-    # Add colorbar subplot for each column
-    for i in range(len(filter_sizes)):
-        
-        tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
-        tick_labels=np.full(len(tick_pos), "")
-        tick_labels[0]=str(tick_pos[0])
-        pcm_res = ax.pcolor(x, y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
-        cbar_ax = fig.add_subplot(4, len(filter_sizes), i+1)
-        cbar = plt.colorbar(pcm_res, cax=cbar_ax, orientation='horizontal')
-        cbar.set_ticks(tick_pos, labels=tick_labels, minor=True)  # Set ticks for the colorba
-        # Hide colorbar subplot axes
-        cbar_ax.axis('off')
-
-    # Add titles
-    axs[1, 0].set_title("$\\overline{\\Phi}_{res}$")
-    axs[2, 0].set_title("$\\overline{\\Phi}_{NN}$")
-    axs[3, 0].set_title("$\\overline{\\Phi}_{0th}$")
-    plt.suptitle("$\\Delta /\\delta_{th}$", x=0.52, y=0.020)
-
-    plt.tight_layout()
-    plt.show()
-
+compare_filter_sizes()
 
 def plot_comparison_graphs():
-  plt.rc('xtick', labelsize=8)
-  plt.rc('ytick', labelsize=8)
-  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)).text(-5, 4.75, "$\\overline{\\Phi}_{res}$", fontsize=16, fontfamily='serif')
-  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)*2).text(-5, 4.75, "$\\overline{\\Phi}_{NN}$", fontsize=16, fontfamily='serif')
-  plt.subplot(4,len(filter_sizes),1+len(filter_sizes)*3).text(-5, 4.75, "$\\overline{\\Phi}_{0th}$", fontsize=16, fontfamily='serif')
+  rc_textsize=14
+  height_ratios=[0.1,2,2,2]
+  width_ratios=[]
   for i in range(len(filter_sizes)):
-    if i==0:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
-    else:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.get_yaxis().set_visible(False)
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)).axes.get_xaxis().set_visible(False)
+     width_ratios.append(len(get_boundaries(filter_sizes[i])[0]))
+  fig, axs=plt.subplots(4,len(filter_sizes), gridspec_kw={'height_ratios': height_ratios, 'width_ratios': width_ratios})
+  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
+  #setting y-axis labels and row titles (type of analysis conducted)
+  for i in range(len(row_titles)):
+    axs[i+1,0].text(-4.5, 4.5, row_titles[i], fontsize=18, fontfamily='serif')
+    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4, fontsize=rc_textsize)
+  #hiding unnecessary axes
+    for j in range(len(filter_sizes)):
+      if i!=2:
+        axs[i+1, j].get_xaxis().set_visible(False)
+      if j!=0:
+        axs[i+1,j].axes.get_yaxis().set_visible(False)
+  
+  for i in range(len(filter_sizes)):
+    #setting up x-axis and column titles (filter size used)
+    axs[len(row_titles),i].text(s=str(filter_sizes[i]), x=4.25, y=-3.25, fontsize=rc_textsize)
     x,y =get_boundaries(filter_sizes[i])
-    plt.pcolor(x,y[::-1], phi_field_res(filter_sizes[i]), cmap='jet')
-    print(phi_field_res(filter_sizes[i]).size)
-    tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
-    tick_labels=np.full(len(tick_pos), "")
-    tick_labels[0]=str(tick_pos[0])
-    cbar_ax = plt.subplot(4, len(filter_sizes), i+1, aspect=0.1*(phi_field_res(filter_sizes[i]).max()))
-    cbar = plt.colorbar(cax=cbar_ax, orientation='horizontal')
-    cbar.set_ticks(tick_pos, labels=tick_labels, minor=True)  # Set ticks for the colorba
-    if i==0:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.set_ylabel('y (mm)', labelpad=-4)
-    else:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.get_yaxis().set_visible(False)
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.set_xticks([2,4,6,8])
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)).axes.get_xaxis().set_visible(False)
-    plt.pcolor(x,y, phi_field_NN(filter_sizes[i]), cmap='jet')
-    if i==0:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_ylabel('y (mm)', labelpad=-4)
-    else:
-      plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+2*len(filter_sizes)).axes.get_yaxis().set_visible(False)
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_xticks([2,4,6,8])
-    plt.pcolor(x,y, phi_field_0th(filter_sizes[i]), cmap='jet')
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).text(s=str(filter_sizes[i]), x=4.25, y=-3.5)
-    plt.subplot(4,len(filter_sizes),i+1+len(filter_sizes)+len(filter_sizes)*2).axes.set_xlabel('x (mm)')
-    plt.subplot(4, len(filter_sizes),i+1+len(filter_sizes)*3)
-    
-  plt.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.020)
-  plt.show()
-plot_comparison_graphs()
+    axs[len(row_titles),i].axes.set_xticks([2,4,6,8])
+    axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=rc_textsize)
 
-def calculate_pearson_r(filter_size):
-  beep = [val for sublist in phi_field_res(filter_size) for val in sublist]
+    #plotting actual graphs
+
+    axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[2,i].imshow(np.flipud(phi_field_NN(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+
+    #colorbar tings
+    tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
+    tick_labels=["" for i in tick_pos]
+    tick_labels[0]=str(0)
+    tick_labels[-1]=str(np.floor(phi_field_res(filter_sizes[i]).max()*10)/10) #idk why this dont work
+    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal')
+    axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False)
+  
+  #title, fig saving, and showing
+  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.03, fontsize=18)
+  plt.savefig("Graph Comparison")
+  plt.show()
+
+#plot_comparison_graphs()
+
+def calculate_pearson_r(filter_size, NN_or_0th):
+  beep = [val for sublist in phi_field_res(filter_size)[::-1] for val in sublist]
   boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
-  pearson_r = sp.stats.pearsonr(beep, boop)[0]
+  bob = [val for sublist in phi_field_0th(filter_size) for val in sublist]
+  if NN_or_0th=='NN':
+    pearson_r = sp.stats.pearsonr(beep, boop)[0]
+  elif NN_or_0th=='0th':
+    pearson_r = sp.stats.pearsonr(beep, bob)[0]
+  else:
+    print(f"calculate_pearson_r only takes \'NN\' or \'0th\' as inputs, not {NN_or_0th}.")
+    return 
   return pearson_r
 
-def calculate_MSE(filter_size):
-  beep = [val for sublist in  phi_field_res(filter_size) for val in sublist]
-  boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
+def calculate_MSE(filter_size, NN_or_0th):
+  beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
+  boop = np.array([boo for bee in phi_field_NN(filter_size) for boo in bee])
+  bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
   MSE = mean_squared_error(beep, boop)
+  if NN_or_0th=='NN':
+    MSE = mean_squared_error(beep, boop)
+  elif NN_or_0th=='0th':
+    MSE = mean_squared_error(beep, bob)
+  else:
+    print(f"calculate_MSE only takes \'NN\' or \'0th\' as inputs, not {NN_or_0th}.")
+    return 
   return MSE
 
 def comparison_plot(MSE_or_Pearson):
-  y=[]
+  y_NN=[]
+  y_0th=[]
   if MSE_or_Pearson=="Pearson":
     for i in filter_sizes:
-      y.append(calculate_pearson_r(i))
+      y_NN.append(calculate_pearson_r(i, 'NN'))
+      y_0th.append(calculate_pearson_r(i, '0th'))
   elif MSE_or_Pearson=="MSE":
     for i in filter_sizes:
-      y.append(calculate_MSE(i))
+      y_NN.append(calculate_MSE(i, 'NN'))
+      y_0th.append(calculate_MSE(i, '0th'))
   else:
-    print("comparison_plot only takes \'MSE\' or \'Pearson\'")
-  plt.plot(filter_sizes,y, 'k', marker='o')
-  plt.vlines(filter_sizes[0:-1], 0, 1.05*max(y), colors='gray', linestyles='dashed', alpha=0.3)
+    print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
+  plt.plot(filter_sizes,y_NN, 'k', marker='o',label="NN vs. DNS")
+  plt.plot(filter_sizes, y_0th, marker='o', label='0th vs. DNS')
+  plt.vlines(filter_sizes, 0, 1.05*max(y_NN), colors='gray', linestyles='dashed', alpha=0.3)
   plt.xlim(0.47, 2.03)
-  plt.ylim(0.95*min(y), 1.05*max(y))
+  if MSE_or_Pearson=='MSE':
+    plt.ylim(0, 1.05*max(y_NN))
+  elif MSE_or_Pearson == 'Pearson':
+    plt.ylim(0.95*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
+  plt.xticks([i/4 for i in range(2,9)])
   plt.tick_params(axis='both', which='major', direction='in', top=True, right=True)
-  plt.xlabel("$\\Delta/\\delta_{th,norm}$")
+  plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=16)
+  plt.legend()
   if MSE_or_Pearson=="MSE":
-    plt.ylabel("$\\epsilon_{MSE}$")
+    plt.ylabel("$\\epsilon_{MSE}$", fontsize=16)
   else:
-    plt.ylabel("$r_{p}$")
+    plt.ylabel("$r_{p}$", fontsize=16)
   plt.show()
-comparison_plot('MSE')
-'''
-MSE_vals=map(calculate_MSE(filter_sizes), filter_sizes)
-pearson_r_vals = map(calculate_pearson_r(filter_sizes), filter_sizes)
-
-# Plot MSE
-plt.plot(filter_sizes, MSE_vals)
-plt.show()
-
-# Plot Pearson R
-plt.plot(filter_sizes, pearson_r_vals)
-plt.show()
-
-# reaction rate plot NN
-plt.pcolor(x, y, np.moveaxis(wcr_field_NN, (0,1), (1,0)), cmap = 'hot')
-plt.colorbar()
-plt.show()
-
-# error plot
-sexy='hot'
-wronk=np.subtract(wcr_field_res,wcr_field_NN)
-plt.pcolor(x, y, np.moveaxis(wronk, (0,1), (1,0)), cmap =sexy)
-plt.colorbar()
-plt.show()
-
-# data plot
-plt.pcolor(x, y, np.moveaxis(wcr_field_res, (0,1), (1,0)), cmap='hot')
-plt.colorbar()
-plt.show()
-'''
+#comparison_plot('Pearson')
