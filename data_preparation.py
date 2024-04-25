@@ -66,7 +66,7 @@ def f_exclude_boundary(filter_size):
   index = filter_sizes.index(filter_size)
   actual_filter_size = fwidth_n[index]
   # Exclusion boundaries
-  base_exclusion_left = 0
+  base_exclusion_left = 25
   base_exclusion_right = 0
   additional_exclusion = 0.5 * actual_filter_size  # Adjust according to cell size if needed
 

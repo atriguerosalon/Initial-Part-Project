@@ -19,7 +19,7 @@ if __name__ == '__main__':
     sigma_value = np.sqrt(filter_size ** 2 / 12.0)
     
     # Calculate the exclusion boundary based on the filter size
-    base_exclusion_left = 0
+    base_exclusion_left = 25
     base_exclusion_right = 0
     additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
 
