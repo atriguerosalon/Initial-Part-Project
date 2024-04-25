@@ -15,6 +15,7 @@ filter_size = fwidth_n[2]
 # std. deviation
 sigma_value = np.sqrt(filter_size ** 2 / 12.0)
 print(f'sigma_value: {sigma_value}')
+#hi Job
 # Exclusion boundaries
 base_exclusion_left = 0
 base_exclusion_right = 0
