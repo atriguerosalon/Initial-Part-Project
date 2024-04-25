@@ -210,10 +210,10 @@ def compare_filter_sizes():
   plt.savefig("Filtering w. Diff Filter Sizes.png")
   plt.show()
 
-compare_filter_sizes()
+#compare_filter_sizes()
 
 def plot_comparison_graphs():
-  rc_textsize=14
+  rc_textsize=18
   height_ratios=[0.1,2,2,2]
   width_ratios=[]
   for i in range(len(filter_sizes)):
@@ -222,8 +222,9 @@ def plot_comparison_graphs():
   row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
-    axs[i+1,0].text(-4.5, 4.5, row_titles[i], fontsize=18, fontfamily='serif')
-    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-4, fontsize=rc_textsize)
+    axs[i+1,0].text(-7, 4.5, row_titles[i], fontsize=22, fontfamily='serif')
+    axs[i+1,0].axes.set_yticks([0,2,4,6,8,10], labels=[0,2,4,6,8,10], fontsize=14)
+    axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-0.75, fontsize=rc_textsize)
   #hiding unnecessary axes
     for j in range(len(filter_sizes)):
       if i!=2:
@@ -233,9 +234,9 @@ def plot_comparison_graphs():
   
   for i in range(len(filter_sizes)):
     #setting up x-axis and column titles (filter size used)
-    axs[len(row_titles),i].text(s=str(filter_sizes[i]), x=4.25, y=-3.25, fontsize=rc_textsize)
+    axs[len(row_titles),i].text(s=str(filter_sizes[i]), x=4.25, y=-4.9, fontsize=rc_textsize)
     x,y =get_boundaries(filter_sizes[i])
-    axs[len(row_titles),i].axes.set_xticks([2,4,6,8])
+    axs[len(row_titles),i].axes.set_xticks([2,4,6,8], labels=[2,4,6,8], fontsize=14)
     axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=rc_textsize)
 
     #plotting actual graphs
@@ -249,15 +250,54 @@ def plot_comparison_graphs():
     tick_labels=["" for i in tick_pos]
     tick_labels[0]=str(0)
     tick_labels[-1]=str(np.floor(phi_field_res(filter_sizes[i]).max()*10)/10) #idk why this dont work
-    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal')
-    axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False)
+    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal', fraction=0.047*len(x)/384)
+    axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False, fontsize=16)
+    axs[0,i].xaxis.set_ticks_position('top')
   
   #title, fig saving, and showing
-  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.03, fontsize=18)
+  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.535, y=0.045, fontsize=22)
   plt.savefig("Graph Comparison")
   plt.show()
 
 #plot_comparison_graphs()
+def plot_demo_graph():
+  tick_size = 16
+  rc_textsize = 18
+  filter_index = 0
+  height_ratios = [.2, 2]
+  width_ratios = [1]
+
+  # Create the figure and axes
+  fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': height_ratios, 'width_ratios': width_ratios})
+  x,y =get_boundaries(filter_sizes[filter_index])
+  # Plot the image
+  image = axs[1].imshow(phi_field_res(filter_sizes[filter_index]), cmap='jet', extent=[x.min(), x.max(), y.min(), y.max()])
+
+  # Customize the image axes
+  axs[1].set_yticks([0, 2, 4, 6, 8, 10], labels=[0, 2, 4, 6, 8, 10], fontsize=tick_size)
+  axs[1].set_ylabel('y (mm)', labelpad=-0.75, fontsize=rc_textsize)
+  axs[1].set_xticks([2, 4, 6, 8], labels=[2, 4, 6, 8], fontsize=tick_size)
+  axs[1].set_xlabel('x (mm)', labelpad=0.5, fontsize=rc_textsize)
+
+  # Create the colorbar
+  cbar = plt.colorbar(mappable=image, cax=axs[0], orientation='horizontal', fraction=0.04)  # Adjust fraction here
+
+  # Customize the colorbar ticks and labels
+  tick_pos = np.arange(0, np.floor(phi_field_res(filter_sizes[filter_index]).max() * 10) / 10 + 0.05, 0.05)
+  tick_labels = ["" for _ in tick_pos]
+  tick_labels[0] = str(0)
+  tick_labels[-1] = str(np.floor(phi_field_res(filter_sizes[filter_index]).max() * 10) / 10)
+
+  axs[0].set_xticks(tick_pos)
+  axs[0].set_xticklabels(tick_labels)
+  axs[0].tick_params(axis='x', which='major', labelsize=tick_size)
+  axs[0].xaxis.set_ticks_position('top')
+
+  # Adjust the aspect ratio of the colorbar to match the image
+  cbar.ax.set_aspect(0.106)  # For 2.00, this is 0.063. For 0.5, this is 0.106
+
+  plt.show()
+plot_demo_graph()
 
 def calculate_pearson_r(filter_size, NN_or_0th):
   beep = [val for sublist in phi_field_res(filter_size)[::-1] for val in sublist]
@@ -316,4 +356,4 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$", fontsize=16)
   plt.show()
-#comparison_plot('Pearson')
+comparison_plot('Pearson')
