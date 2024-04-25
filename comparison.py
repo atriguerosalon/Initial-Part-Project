@@ -297,7 +297,7 @@ def plot_demo_graph():
   cbar.ax.set_aspect(0.106)  # For 2.00, this is 0.063. For 0.5, this is 0.106
 
   plt.show()
-plot_demo_graph()
+#plot_demo_graph()
 
 def calculate_pearson_r(filter_size, NN_or_0th):
   beep = [val for sublist in phi_field_res(filter_size)[::-1] for val in sublist]
@@ -326,6 +326,8 @@ def calculate_MSE(filter_size, NN_or_0th):
     return 
   return MSE
 
+plt.rcParams['axes.linewidth'] = 1.5
+
 def comparison_plot(MSE_or_Pearson):
   y_NN=[]
   y_0th=[]
@@ -339,21 +341,21 @@ def comparison_plot(MSE_or_Pearson):
       y_0th.append(calculate_MSE(i, '0th'))
   else:
     print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
-  plt.plot(filter_sizes,y_NN, 'k', marker='o',label="NN vs. DNS")
-  plt.plot(filter_sizes, y_0th, marker='o', label='0th vs. DNS')
-  plt.vlines(filter_sizes, 0, 1.05*max(y_NN), colors='gray', linestyles='dashed', alpha=0.3)
+  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="NN/DNS", linewidth=1.5)
+  plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/DNS', linewidth=1.5)
+  plt.vlines(filter_sizes, 0, 1.05*max(y_NN), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
   plt.xlim(0.47, 2.03)
   if MSE_or_Pearson=='MSE':
-    plt.ylim(0, 1.05*max(y_NN))
+    plt.ylim(0.6*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
   elif MSE_or_Pearson == 'Pearson':
     plt.ylim(0.95*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
   plt.xticks([i/4 for i in range(2,9)])
-  plt.tick_params(axis='both', which='major', direction='in', top=True, right=True)
-  plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=16)
-  plt.legend()
+  plt.tick_params(axis='both', which='major', direction='in', top=True, right=True, labelsize=15)
+  plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
+  plt.legend(loc='best', fontsize=18, edgecolor='black', fancybox=False).get_frame().set_linewidth(1.5)
   if MSE_or_Pearson=="MSE":
-    plt.ylabel("$\\epsilon_{MSE}$", fontsize=16)
+    plt.ylabel("$\\epsilon_{MSE}$", fontsize=18)
   else:
-    plt.ylabel("$r_{p}$", fontsize=16)
+    plt.ylabel("$r_{p}$", fontsize=18)
   plt.show()
-comparison_plot('Pearson')
+comparison_plot('MSE')
