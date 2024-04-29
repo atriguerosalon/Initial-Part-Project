@@ -13,10 +13,13 @@ lx, ly = 0.01, 0.01  # [m]
 dx, dy = lx / (nx - 1), ly / (ny - 1)
 x = np.arange(0, lx + dx, dx)
 y = np.arange(0, ly + dy, dy)
-TU = 1500.000  # K
-TB = 1623.47  # K
+TU = 1500.000  # K (reactant temperature)
+TB = 1623.47  # K (burn temperature)
 MAX_WCR = 1996.8891
 MAX_CT = 3931.0113
+
+filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
 
 # Function definitions
 def exclude_boundaries(field, left_exclusion, right_exclusion):
@@ -36,7 +39,21 @@ def exclude_boundaries(field, left_exclusion, right_exclusion):
         return field[:, :-right_exclusion or None]
     else:
         return field
-    
+
+def f_exclude_boundary(filter_size):
+
+  #Get the index of the filter_size
+  index = filter_sizes.index(filter_size)
+  actual_filter_size = fwidth_n[index]
+  # Exclusion boundaries
+  base_exclusion_left = 25
+  base_exclusion_right = 0
+  additional_exclusion = 0.5 * actual_filter_size  # Adjust according to cell size if needed
+
+  left_exclusion = base_exclusion_left + additional_exclusion
+  right_exclusion = base_exclusion_right + additional_exclusion
+  return int(left_exclusion), int(right_exclusion)
+
 def load_data(data_path_temp, data_path_reaction, exclude_boundary=(0,0)):
     # Unpack the exclude_boundary tuple
     left_exclude, right_exclude = exclude_boundary
@@ -52,27 +69,10 @@ def load_data(data_path_temp, data_path_reaction, exclude_boundary=(0,0)):
     return data_temp, data_reaction
     
 def sigma_value(filter_size):
-  filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
-  fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
   # Get the index of the filter_size
   index = filter_sizes.index(filter_size)
   actual_filter_size = fwidth_n[index]
   return np.sqrt(actual_filter_size ** 2 / 12.0)
-
-def f_exclude_boundary(filter_size):
-  filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
-  fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
-  #Get the index of the filter_size
-  index = filter_sizes.index(filter_size)
-  actual_filter_size = fwidth_n[index]
-  # Exclusion boundaries
-  base_exclusion_left = 25
-  base_exclusion_right = 0
-  additional_exclusion = 0.5 * actual_filter_size  # Adjust according to cell size if needed
-
-  left_exclusion = base_exclusion_left + additional_exclusion
-  right_exclusion = base_exclusion_right + additional_exclusion
-  return int(left_exclusion), int(right_exclusion)
 
 def calculate_fields(data_temp, data_reaction, TB, TU):
     wcr_field = data_reaction / (TB - TU)
@@ -91,8 +91,7 @@ def calculate_phi(wcr_field_star, ct_field_star):
 
 def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     #Run Gaussian filter before calculating phi
-    filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
-    fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
+
 
     if filter_size == 0:
         return calculate_phi(wcr_field_star, ct_field_star)
@@ -120,11 +119,11 @@ def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,
     return wcr_field_star, ct_field_star, phi
 
 def create_custom_cmap():
-    jet = plt.cm.get_cmap('jet', 256)
+    jet = plt.cm.get_cmap('jet', 1024)
 
     # Modify the colormap to set values below 0.2 to white
-    newcolors = jet(np.linspace(0, 1, 256))
-    newcolors[:int(256*0.2), :] = np.array([1, 1, 1, 1])  # RGBA for white color
+    newcolors = jet(np.linspace(0, 1, 1024))
+    newcolors[:int(1024*0.2), :] = np.array([1, 1, 1, 1])  # RGBA for white color
     new_jet = mcolors.LinearSegmentedColormap.from_list('white_jet', newcolors)
     return new_jet
 
@@ -196,7 +195,7 @@ if __name__ == '__main__':
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
     #Plot phi zeroth from filter size 0.5 to 2.0, in the same figure
-    filter_sizes=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+    filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
     fig, ax = plt.subplots(1, len(filter_sizes), figsize=(20, 10))
 
     for i, filter_size in enumerate(filter_sizes):
@@ -214,4 +213,9 @@ if __name__ == '__main__':
         # Plot the phi 0th order
         ax[i].imshow(phi_0th_order, cmap=create_custom_hot_cmap())
         ax[i].set_title(f"Filter size: {filter_size}")
+        #Save the figure to the folder named 'figs'
+        if not os.path.exists('figs'):
+            os.makedirs('figs')
+        plt.savefig('figs/phi_0th_order.pdf', dpi=300)
+        
     plt.show()

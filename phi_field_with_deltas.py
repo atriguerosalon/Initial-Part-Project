@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 import matplotlib.image as mpimg
 import os
-from data_preparation import filename_to_field, create_custom_cmap
+from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary
 from mpl_toolkits.axes_grid1 import make_axes_locatable #never used this before but it gets the job done
 
 
@@ -17,22 +17,30 @@ if __name__ == '__main__':
     filter_size = 0
     # std. deviation: NOT USED IN THIS SCRIPT
     sigma_value = np.sqrt(filter_size ** 2 / 12.0)
-    
+
+    """
     # Calculate the exclusion boundary based on the filter size
-    base_exclusion_left = 25
+    base_exclusion_left = 0
     base_exclusion_right = 0
     additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
 
     left_exclusion = base_exclusion_left + additional_exclusion
     right_exclusion = base_exclusion_right + additional_exclusion
     exclude_boundary = int(left_exclusion), int(right_exclusion)
-    
+    """
+
+    # Calculate the exclusion boundary based on the filter size
+    exclude_boundary = f_exclude_boundary(filter_size)
+    left_exclusion, right_exclusion = exclude_boundary
+
+    # Data paths	
     data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
     data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
     wcr_field_star = np.clip(wcr_field_star, None, 1) #Naughty line, ask Alejandro
+    
     # Adjust the size of the plots
     nx_original = 384
     ny_original = 384
