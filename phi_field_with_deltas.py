@@ -30,7 +30,7 @@ if __name__ == '__main__':
     """
 
     # Calculate the exclusion boundary based on the filter size
-    exclude_boundary = f_exclude_boundary(filter_size)
+    exclude_boundary = (0,0)#f_exclude_boundary(filter_size)
     left_exclusion, right_exclusion = exclude_boundary
 
     # Data paths	
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Load data, calculate and normalize fields, and calculate phi
     wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
     wcr_field_star = np.clip(wcr_field_star, None, 1) #Naughty line, ask Alejandro
-    
+
     # Adjust the size of the plots
     nx_original = 384
     ny_original = 384
