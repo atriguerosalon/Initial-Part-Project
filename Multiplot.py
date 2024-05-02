@@ -55,7 +55,7 @@ print(f"Maximum value in phi_res_filtered: {np.max(phi_res_filtered)}")
 white_jet = create_custom_cmap()
 
 # Create subplots
-fig, axs = plt.subplots(2, 3, figsize=(10, 6))  # Adjust the figure size as needed
+fig, axs = plt.subplots(2, 3, figsize=(8, 6))  # Adjust the figure size as needed
 
 # Set common extent for all plots
 nx_original = 384

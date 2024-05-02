@@ -163,7 +163,7 @@ def compare_filter_sizes():
     plt.tight_layout()
 
     #Set maximum size of the figure in pdf to 10MB
-    plt.savefig("Filtering w. Diff Filter Sizes rasterized.pdf", dpi=500)
+    plt.savefig("Filtering w. Diff Filter Sizes rast.pdf", dpi=500)
 
 compare_filter_sizes()
 
