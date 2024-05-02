@@ -12,9 +12,9 @@ if __name__ == '__main__':
     plt.rcParams['font.family'] = 'STIXGeneral'
     
     # filter size in cell number - 25 means length of 25 cells
-    fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
-    #filter_size = fwidth_n[0]
-    filter_size = 0
+    fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
+    filter_size = fwidth_n[0]
+
     # std. deviation: NOT USED IN THIS SCRIPT
     sigma_value = np.sqrt(filter_size ** 2 / 12.0)
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     ax.contour(phi, levels=[0], colors='black', extent=extent_mm, origin = 'upper')
 
     #Get the even indexes of the filter sizes
-    dashed_line_positions = fwidth_n[::2]
+    dashed_line_positions = fwidth_n[1::2]
 
     # Convert the filter sizes to mm
     dashed_line_positions_mm = [original_extent_mm[1] * dashed_line_positions[i] / nx_original for i in range(len(dashed_line_positions))]

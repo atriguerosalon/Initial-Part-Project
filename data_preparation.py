@@ -119,11 +119,13 @@ def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,
     return wcr_field_star, ct_field_star, phi
 
 def create_custom_cmap():
-    jet = plt.cm.get_cmap('jet', 1024)
+    res = 1024
+    starting_val = 0.2
+    jet = plt.cm.get_cmap('jet', res)
 
     # Modify the colormap to set values below 0.2 to white
-    newcolors = jet(np.linspace(0, 1, 1024))
-    newcolors[:int(1024*0.2), :] = np.array([1, 1, 1, 1])  # RGBA for white color
+    newcolors = jet(np.linspace(0, 1, res))
+    newcolors[:int(res*starting_val), :] = np.array([1, 1, 1, 1])  # RGBA for white color
     new_jet = mcolors.LinearSegmentedColormap.from_list('white_jet', newcolors)
     return new_jet
 
