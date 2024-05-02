@@ -119,7 +119,12 @@ def scatterplots(filter_size, ax2=None):
         fig2, ax2 = plt.subplots()
     else:
         fig2 = ax2.get_figure()
-    ax2.scatter(x, y, s=scatter_s, color='k', alpha=0.15)
+    print("Made it here")
+    # Rasterized=True to reduce file size, 
+    #Increase rasterized resolution to 300 dpi
+
+    ax2.scatter(x, y, s=scatter_s, color='k', alpha=0.15, rasterized=True)
+    print("Made it here, post scatter")
     ax2.plot([0, 1.5], [0, 1.5], linestyle='--', marker='', c='midnightblue', lw=lw)
     ax2.set_xlim(0, max(y)*1.06)
     ax2.set_ylim(0, max(y)*1.06)
@@ -156,7 +161,9 @@ def compare_filter_sizes():
     fig.suptitle("$\\Delta /\\delta_{th}$", x=0.52, y=0.075, fontsize=25)
 
     plt.tight_layout()
-    plt.savefig("Filtering w. Diff Filter Sizes.pdf", dpi=300)
+
+    #Set maximum size of the figure in pdf to 10MB
+    plt.savefig("Filtering w. Diff Filter Sizes rasterized.pdf", dpi=500)
 
 compare_filter_sizes()
 
@@ -299,7 +306,7 @@ def comparison_plot(MSE_or_Pearson):
   elif MSE_or_Pearson == 'Pearson':
     plt.ylim(0.95*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
   plt.xticks([i/4 for i in range(2,9)])
-  plt.tick_params(axis='both', which='major', direction='in', top=True, right=True, labelsize=15)
+  plt.tick_params(axis='both', which='major', direction='in', dpi=True, right=True, labelsize=15)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
   plt.legend(loc='best', fontsize=18, edgecolor='black', fancybox=False).get_frame().set_linewidth(1.5)
   if MSE_or_Pearson=="MSE":
