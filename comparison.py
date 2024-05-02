@@ -75,142 +75,91 @@ def phi_field_0th(filter_size):
   unfiltered_0th = np.flipud(unfiltered_0th)
   return gaussian_filter(unfiltered_0th, sigma=sigma_value(filter_size))
 
+plt.rcParams['axes.linewidth'] = 1.5
 
-def scatterplots(filter_size, ax1=None, ax2=None):
-  x=phi_field_res(filter_size)[::-1].flatten()
-  y=phi_field_NN(filter_size).flatten()
-  empty_intervals=[]
-  max_x_val=np.max(x)
-  globals()["divisions"]=5000
-  x_vals=np.linspace(0, 1, divisions)
-  y_vals=np.array([])
-  all_intervals=list(range(divisions-1))
-  
-  for i in range(divisions-1):
-    #creating arrays for every interval
-    globals()[f"interval_indices{i}"]=np.array([])
-    globals()[f"interval_y_vals{i}"]=np.array([])
-  
-  for i in range(len(x)):
-    #assigning every x index to some interval
-    interval_val=int((x[i]*divisions))
-    globals()[f"interval_indices{interval_val}"]=np.append(globals()[f"interval_indices{interval_val}"], i)
-  for i in range(divisions-1):
-    #finding empty intervals
-    if globals()[f"interval_indices{i}"].size==0:
-      empty_intervals.append(i)
-  
-  mask = np.array(empty_intervals)
-  all_intervals = np.array(all_intervals)
-  # Create a mask covering all indices in all_intervals
-  full_mask = np.zeros(len(all_intervals), dtype=bool)
-  full_mask[mask] = True
+def scatterplots(filter_size, ax2=None):
+    x = phi_field_res(filter_size)[::-1].flatten()
+    y = phi_field_NN(filter_size).flatten()
+    empty_intervals = []
+    max_x_val = np.max(x)
+    divisions = 20000
+    x_vals = np.linspace(0, 1, divisions)
+    y_vals = np.array([])
+    all_intervals = list(range(divisions - 1))
 
-  # Use the full mask to exclude intervals
-  valid_intervals = all_intervals[~full_mask]
-  for i in valid_intervals:
-    #mapping every y value in valid intervals
-    for j in globals()[f"interval_indices{i}"]:
-        globals()[f"interval_y_vals{i}"] = np.append(globals()[f"interval_y_vals{i}"], y[int(j)]) 
-    #finding the y average in the interval
-    y_vals=np.append(y_vals, np.mean(globals()[f"interval_y_vals{i}"]))
-  
-  #only keeping x_vals of valid intervals
-  x_vals=np.array([x_vals[i] for i in valid_intervals])
+    for i in range(divisions - 1):
+        globals()[f"interval_indices{i}"] = np.array([])
+        globals()[f"interval_y_vals{i}"] = np.array([])
 
-  #datashader bs - not really much of a point
-  """
-    #df=pd.DataFrame({'x':x, 'y':y})
-    dsartist = dsshow(
-        df,
-        ds.Point("x", "y"),
-        ds.count(),
-        width_scale=1,
-        height_scale=1,
-        norm="linear",
-        cmap='inferno',
-        ax=ax,
-    )
-    """
-  scatter_s=0.05
-  lw=0.8
-  label_size=14
-  #plotting averaged
-  if ax1 is None:
-      fig1, ax1 = plt.subplots()
-  else:
-      fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
-  ax1.scatter(x_vals, y_vals, s=scatter_s, color='k')
-  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
-  ax1.set_xlim(0, 1)
-  ax1.set_ylim(0, 1)
-  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
-  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
-  if ax1 is None:
-      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Averaged_{filter_size}.png")
-      plt.close(fig1)  # Close the figure if created within the function
+    for i in range(len(x)):
+        interval_val = int((x[i] * divisions))
+        globals()[f"interval_indices{interval_val}"] = np.append(globals()[f"interval_indices{interval_val}"], i)
+    for i in range(divisions - 1):
+        if globals()[f"interval_indices{i}"].size == 0:
+            empty_intervals.append(i)
 
-  #trying Savitz-Golay filtering
-  """
-  if ax1 is None:
-    fig1, ax1 = plt.subplots()
-  else:
-    fig1 = ax1.get_figure()  # Retrieve the figure associated with the provided axis
-  y_filtered=sp.signal.savgol_filter(y, 5001, 7)
-  ax1.scatter(x, y_filtered, s=scatter_s, color='k')
-  ax1.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
-  ax1.set_xlim(0, 1)
-  ax1.set_ylim(0, 1)
-  ax1.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
-  ax1.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
-  if ax1 is None:
-      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project\\Scatter_Varying_Divisions\\Scatterplot_Filtered_{filter_size}.png")
-      plt.close(fig1)  # Close the figure if created within the function
-  """
-      
-  #plotting non-averaged
-  if ax2 is None:
-      fig2, ax2 = plt.subplots()
-  else:
-      fig2 = ax2.get_figure()  # Retrieve the figure associated with the provided axis
-  ax2.scatter(x, y, s=scatter_s, color='k')
-  ax2.plot([0, 1], [0, 1], linestyle='--', marker='', c='blue', lw=lw)
-  ax2.set_xlim(0, 1)
-  ax2.set_ylim(0, 1)
-  ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
-  ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
-  if ax2 is None:
-      fig1.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Reg_{filter_size}.png")
-      plt.close(fig1)  # Close the figure if created within the function
-  return fig1, ax1, fig2, ax2
+    mask = np.array(empty_intervals)
+    all_intervals = np.array(all_intervals)
+    full_mask = np.zeros(len(all_intervals), dtype=bool)
+    full_mask[mask] = True
+
+    valid_intervals = all_intervals[~full_mask]
+    for i in valid_intervals:
+        for j in globals()[f"interval_indices{i}"]:
+            globals()[f"interval_y_vals{i}"] = np.append(globals()[f"interval_y_vals{i}"], y[int(j)])
+        y_vals = np.append(y_vals, np.mean(globals()[f"interval_y_vals{i}"]))
+
+    x_vals = np.array([x_vals[i] for i in valid_intervals])
+
+    scatter_s = 0.05
+    lw = 1.5  # Increased linewidth
+    label_size = 25
+
+    if ax2 is None:
+        fig2, ax2 = plt.subplots()
+    else:
+        fig2 = ax2.get_figure()
+    ax2.scatter(x, y, s=scatter_s, color='k', alpha=0.15)
+    ax2.plot([0, 1.5], [0, 1.5], linestyle='--', marker='', c='midnightblue', lw=lw)
+    ax2.set_xlim(0, max(y)*1.06)
+    ax2.set_ylim(0, max(y)*1.06)
+    ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
+    ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
+    ax2.tick_params(axis='both', labelsize=18)  # Increase tick label size
+    if ax2 is None:
+        fig2.savefig(f"C:\\Users\\Equipo\\Initial-Part-Project-3\\Scatter_Varying_Divisions\\Scatterplot_Reg_{filter_size}.png")
+        plt.close(fig2)
+    return fig2, ax2
 
 def compare_filter_sizes():
-  row_text_size=12
-  filters_for_scatter=[0.5,1.0,1.5,2.0]
-  fig, axs= plt.subplots(2, 4)
-  axs=axs.ravel()
-  for i, filter_size in enumerate(filters_for_scatter):
-    scatterplots(filter_size, ax2=axs[i], ax1=axs[i+len(filters_for_scatter)])
-  row_titles=["Unfiltered", "Filtered"]
-  #setting y-axis labels and row titles (type of analysis conducted)
-  for i in range(len(row_titles)):
-    axs[i*len(filters_for_scatter)].text(-0.52, 0.5, row_titles[i], fontsize=row_text_size, fontfamily='serif')
-  #hiding unnecessary axes
-    for j in range(len(filters_for_scatter)):
-      if i!=(len(row_titles)-1):
-        axs[i*len(filters_for_scatter)+j].get_xaxis().set_visible(False)
-      if j!=0:
-        axs[i*len(filters_for_scatter)+j].axes.get_yaxis().set_visible(False)
-  
-  for i in range(len(filters_for_scatter)):
-    #setting up x-axis and column titles (filter size used)
-    axs[len(filters_for_scatter)+i].text(s=str(filters_for_scatter[i]), x=.45, y=-.28, fontsize=12)
-  fig.suptitle("$\\Delta /\\delta_{th}$",x=0.52, y=0.038, fontsize=18)
-  plt.tight_layout()  # Adjust layout for better spacing
-  plt.savefig("Filtering w. Diff Filter Sizes.png")
-  plt.show()
+    row_text_size = 22
+    filters_for_scatter = [0.5, 1.0, 1.5, 2.0]
+    fig, axs = plt.subplots(1, 4, figsize=(19, 6.3), linewidth=2) 
+    axs = axs.ravel()
 
-#compare_filter_sizes()
+    for i, filter_size in enumerate(filters_for_scatter):
+        fig2, ax2 = scatterplots(filter_size, ax2=axs[i])  # Capture fig and ax2 returned by scatterplots function
+        ax2.yaxis.set_major_locator(plt.MaxNLocator(5))  # Ensure y-axis ticks are present for all subplots
+        if i != 0:
+            ax2.set_ylabel('')  # Remove y-label for all subplots except the first one
+
+    #for j in range(1,len(filters_for_scatter)):
+            #axs[j].axes.get_yaxis().set_visible(False)
+
+    for i in range(len(filters_for_scatter)):
+        xlim = axs[i].get_xlim()
+        ylim = axs[i].get_ylim()
+        x_center = (xlim[0] + xlim[1]) / 2  # Calculate the center of the x-axis
+        y_bottom = ylim[0] - (ylim[1] - ylim[0]) * 0.3  # Position slightly below the bottom of the y-axis
+        axs[i].text(s=str(filters_for_scatter[i]), x=x_center, y=y_bottom, ha='center', fontsize=row_text_size)
+
+    fig.suptitle("$\\Delta /\\delta_{th}$", x=0.52, y=0.075, fontsize=25)
+
+    plt.tight_layout()
+    plt.savefig("Filtering w. Diff Filter Sizes.pdf", dpi=300)
+
+compare_filter_sizes()
+
 
 def plot_comparison_graphs():
   rc_textsize=18
@@ -358,4 +307,4 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$", fontsize=18)
   plt.show()
-comparison_plot('MSE')
+#comparison_plot('Pearson')
