@@ -24,6 +24,9 @@ beta_opt, x0_opt = popt
 x_fit = np.linspace(min(x_data), max(x_data), 200)
 y_fit = sigmoid(x_fit, beta_opt, x0_opt)
 
+# Save the fitted curve values
+np.save('sigmoid_fit_values.npy', [x_fit, y_fit])
+
 # Plotting
 plt.scatter(x_data, y_data, label='Neural Network Data', color='blue')
 plt.plot(x_fit, y_fit, label=f'Fitted Sigmoid\nbeta={beta_opt:.2f}, x0={x0_opt:.2f}', color='red')
