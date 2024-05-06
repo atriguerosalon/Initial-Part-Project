@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
-from data_preparation import filename_to_field, create_custom_cmap
+from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary	
 import os
 
 # Add desired font settings
@@ -9,22 +9,27 @@ plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
 # filter size in cell number - 25 means length of 25 cells
-fwidth_n = np.array([25, 37, 50, 62, 74, 86, 99])
-filter_size = fwidth_n[2]
+fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
+filter_sizes = [0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
 
+filter_size = filter_sizes[3]
 # std. deviation
-sigma_value = np.sqrt(filter_size ** 2 / 12.0)
+sigma_value = np.sqrt(fwidth_n[3] ** 2 / 12.0)
 print(f'sigma_value: {sigma_value}')
 #hi Job
 # Exclusion boundaries
-base_exclusion_left = 0
+'''	
+base_exclusion_left = 
 base_exclusion_right = 0
 additional_exclusion = 0.5 * filter_size  # Adjust according to cell size if needed
 
 left_exclusion = base_exclusion_left + additional_exclusion
 right_exclusion = base_exclusion_right + additional_exclusion
-exclude_boundary = int(left_exclusion), int(right_exclusion)
-
+'''
+filter
+exclude_boundary = f_exclude_boundary(filter_size)
+left_exclusion, right_exclusion = exclude_boundary
+print(f'left_exclusion: {left_exclusion}, right_exclusion: {right_exclusion}')
 # Data paths
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
@@ -37,11 +42,20 @@ wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
 ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
 phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
 
+#Print maximum wcr_field_filtered value
+print(f"Maximum value in wcr_field_filtered: {np.max(wcr_field_filtered)}")
+
+#Print maximum ct_field_filtered value
+print(f"Maximum value in ct_field_filtered: {np.max(ct_field_filtered)}")
+
+#Print maximum phi_res_filtered value
+print(f"Maximum value in phi_res_filtered: {np.max(phi_res_filtered)}")
+
 #Create custom color map
 white_jet = create_custom_cmap()
 
 # Create subplots
-fig, axs = plt.subplots(2, 3, figsize=(10, 6))  # Adjust the figure size as needed
+fig, axs = plt.subplots(2, 3, figsize=(8, 6))  # Adjust the figure size as needed
 
 # Set common extent for all plots
 nx_original = 384
@@ -53,23 +67,25 @@ new_horizontal_extent_end_mm = original_extent_mm[1] - original_extent_mm[1] * r
 extent_mm = [new_horizontal_extent_start_mm, new_horizontal_extent_end_mm, 0, 10]
 
 # Plotting the original fields
-axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm)
+axs[0, 0].imshow(wcr_field_star, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[0, 0].set_title('(a) ωcT*')
 
-axs[0, 1].imshow(ct_field_star, cmap=white_jet, extent=extent_mm)
+axs[0, 1].imshow(ct_field_star, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[0, 1].set_title('(b) |∇cT|*')
 
-axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
+axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[0, 2].set_title('(c) Φres')
 
+#maximum value in filtered fields
+max_filtered_value = max(np.max(wcr_field_filtered), np.max(ct_field_filtered), np.max(phi_res_filtered))
 # Plotting the filtered fields
-axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm)
+axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+0.00000000000000000000056)
 #axs[1, 0].set_title('(d) ωcT* filtered')
 
-axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm)
+axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+.000000000000000000000039) #ask alejandro
 #axs[1, 1].set_title('(e) |∇cT|* filtered')
 
-axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm)
+axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[1, 2].set_title('(f) Φres filtered')
 
 # Set the labels and titles as per your requirement
@@ -97,10 +113,10 @@ for i, ax in enumerate(axs.flat):
             fontweight='normal', va='top', ha='left', color='black')
     
 # Adjust the subplots to make space for the colorbar
-fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.1)
+fig.subplots_adjust(left=0.05, right=0.90, bottom=0.10, top=0.95, wspace=0.1, hspace=0.15)
 
 # Add the colorbar to the right of the subplots
-cbar_ax = fig.add_axes([0.87, 0.1, 0.025, 0.85])
+cbar_ax = fig.add_axes([0.92, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
 im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
@@ -115,5 +131,5 @@ cbar.ax.tick_params(labelsize=12)
 if not os.path.exists('final_figs'):
     os.makedirs('final_figs')
 #Save fig with sigma value up to two decimal places
-plt.savefig('final_figs/' + f'Final_Unfiltered_Filtered_plots_sigma_{sigma_value:.2f}_new.pdf', dpi=300)
+plt.savefig('final_figs/' + f'Final_Unfiltered_Filtered_plots_fsize_{filter_size}.pdf', dpi=300)
 plt.show()
