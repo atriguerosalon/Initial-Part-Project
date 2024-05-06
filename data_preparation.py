@@ -105,11 +105,11 @@ def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
 
     sigma_value = np.sqrt(actual_filter_size ** 2 / 12.0)
 
-    wcr_field_star = gaussian_filter(wcr_field_star, sigma=sigma_value)
-    ct_field_star = gaussian_filter(ct_field_star, sigma=sigma_value)
-    phi = np.zeros_like(wcr_field_star)
-    phi[(wcr_field_star > 0.4) & (ct_field_star < 0.2)] = 1
-    return phi
+    wcr_field_star_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
+    ct_field_star_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
+    phi_0th = np.zeros_like(wcr_field_star_filtered)
+    phi_0th[(wcr_field_star_filtered > 0.4) & (ct_field_star_filtered < 0.2)] = 1
+    return phi_0th
 
 def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0)):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, exclude_boundaries)

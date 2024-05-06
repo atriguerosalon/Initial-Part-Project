@@ -79,10 +79,10 @@ axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #maximum value in filtered fields
 max_filtered_value = max(np.max(wcr_field_filtered), np.max(ct_field_filtered), np.max(phi_res_filtered))
 # Plotting the filtered fields
-axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=0.56)
+axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+0.00000000000000000000056)
 #axs[1, 0].set_title('(d) ωcT* filtered')
 
-axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=.39)
+axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+.000000000000000000000039) #ask alejandro
 #axs[1, 1].set_title('(e) |∇cT|* filtered')
 
 axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
@@ -113,10 +113,10 @@ for i, ax in enumerate(axs.flat):
             fontweight='normal', va='top', ha='left', color='black')
     
 # Adjust the subplots to make space for the colorbar
-fig.subplots_adjust(left=0.05, right=0.85, bottom=0.10, top=0.95, wspace=0.1, hspace=0.15)
+fig.subplots_adjust(left=0.05, right=0.90, bottom=0.10, top=0.95, wspace=0.1, hspace=0.15)
 
 # Add the colorbar to the right of the subplots
-cbar_ax = fig.add_axes([0.87, 0.1, 0.025, 0.85])
+cbar_ax = fig.add_axes([0.92, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
 im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
