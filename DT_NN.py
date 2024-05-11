@@ -48,10 +48,21 @@ data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 data_temp = np.fromfile(data_path_temp, count=-1, dtype=np.float64)
 data_reaction = np.fromfile(data_path_reaction, count=-1, dtype=np.float64)
 
+def normalize_fields(wcr_field, ct_field, max_wcr, max_ct):
+    wcr_field_star = wcr_field / max_wcr
+    ct_field_star = ct_field / max_ct
+    return wcr_field_star, ct_field_star
 
+def calculate_phi(wcr_field_star, ct_field_star):
+    phi = np.zeros_like(wcr_field_star)
+    phi[(wcr_field_star > 0.4) & (ct_field_star < 0.2)] = 1
+    return phi
+
+wcr_field_star, ct_field_star=normalize_fields(data_reaction, data_temp, data_temp.max(), data_reaction.max())
 
 for i in range(len(data_temp)):
     phi_pred=model(data_temp, data_reaction, 0)
+    phi_res=calculate_phi()
     loss=loss_fn()
     optimizer.zero_grad()
     
