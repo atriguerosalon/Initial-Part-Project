@@ -70,10 +70,10 @@ def phi_field_NN(filter_size):
 
 def phi_field_0th(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
-  wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, (exclude_boundaries_L, exclude_boundaries_R))
+  wcr_field_star, ct_field_star, _ = filename_to_field(data_path_temp, data_path_reaction, (exclude_boundaries_L, exclude_boundaries_R))
   unfiltered_0th= calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size)
   unfiltered_0th = np.flipud(unfiltered_0th)
-  return gaussian_filter(unfiltered_0th, sigma=sigma_value(filter_size))
+  return unfiltered_0th
 
 plt.rcParams['axes.linewidth'] = 1.5
 
