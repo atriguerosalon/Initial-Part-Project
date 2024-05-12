@@ -44,15 +44,15 @@ fwidth_n_B1 = np.array(['000', '025', '037', '049', '062', '074', '086', '099'])
 fwidth_n_A = np.array(['000', '026', '038', '051', '064', '077', '089', '102'])
 filter_sizes=np.array([0,0.5,0.75, 1.00, 1.25, 1.50, 1.75, 2.0])
 
-def get_sig(filter_index, type): 
-  if type=="A1" or type=="A2":
+def get_sig(filter_index, case): 
+  if case=="A1" or case=="A2":
     sig = np.sqrt(int(fwidth_n_A[filter_index]) ** 2 / 12.0)
   else:
     sig = np.sqrt(int(fwidth_n_B1[filter_index]) ** 2 / 12.0)
   return sig
 
 #filepaths
-types=['A1', 'A2', 'B1']
+cases=['A1', 'A2', 'B1']
 timesteps_A=["65", "80", "95"]
 
 nabla_T_total=[]
@@ -112,10 +112,10 @@ model = MyNeuralNetwork(input_size, n_hidden1, n_hidden2, n_hidden3, output_size
 loss_fn = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate0) 
 
-def f_exclude_boundary(filter_index, type):
-  if type=="A1" or type=="A2":
+def f_exclude_boundary(filter_index, case):
+  if case=="A1" or case=="A2":
     actual_filter_size = int(fwidth_n_A[filter_index])
-  elif type=="B1":
+  elif case=="B1":
     actual_filter_size = int(fwidth_n_B1[filter_index])
   # Exclusion boundaries
   base_exclusion_left = 25
@@ -145,41 +145,41 @@ def exclude_boundaries(field, left_exclusion, right_exclusion):
         return field
 
 # getting data
-def get_fields(type, timestep, filter_index):
+def get_fields(case, timestep, filter_index):
     #select the correct file
     if filter_index==0:
-        filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\wtemp-slice-{}-00000{}000.raw".format(type, timestep, type, timestep)
-        if type=="A1" or type=="A2":
-            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(type, timestep, type, timestep, fwidth_n_A[1])
-        elif type=="B1":
-            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\nablatemp-slice-{}-00000{}000.raw".format(type, timestep, type, timestep)
+        filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\wtemp-slice-{}-00000{}000.raw".format(case, timestep, case, timestep)
+        if case=="A1" or case=="A2":
+            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(case, timestep, case, timestep, fwidth_n_A[1])
+        elif case=="B1":
+            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\nablatemp-slice-{}-00000{}000.raw".format(case, timestep, case, timestep)
         else:
-            print("1 - what type this", type)
+            print("1 - what case this", case)
         #todo - add the actual unfiltered nabla_T path when done, and remove the if statement above (if proper implementation, it
         #is unnecessary)
     else:
-        if type=="A1" or type=="A2":
-            filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\bar-wtemp-slice-{}-00000{}000-{}.raw".format(type, timestep, type, timestep, fwidth_n_A[filter_index])
-            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(type, timestep, type, timestep, fwidth_n_A[filter_index])
-        elif type=="B1":
-            filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\bar-wtemp-slice-{}-00000{}000-{}.raw".format(type, timestep, type, timestep, fwidth_n_B1[filter_index])
-            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(type, timestep, type, timestep, fwidth_n_B1[filter_index])
+        if case=="A1" or case=="A2":
+            filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\bar-wtemp-slice-{}-00000{}000-{}.raw".format(case, timestep, case, timestep, fwidth_n_A[filter_index])
+            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(case, timestep, case, timestep, fwidth_n_A[filter_index])
+        elif case=="B1":
+            filepath_wtemp=r"Data_new_NN\dataset_slice_{}_TS{}\bar-wtemp-slice-{}-00000{}000-{}.raw".format(case, timestep, case, timestep, fwidth_n_B1[filter_index])
+            filepath_nabla_T=r"Data_new_NN\dataset_slice_{}_TS{}\tilde-nablatemp-slice-{}-00000{}000-{}.raw".format(case, timestep, case, timestep, fwidth_n_B1[filter_index])
         else:
-            print("2 - what type this", type)
+            print("2 - what case this", case)
     
     #select correct sizing and proper normalization
-    if type=="A1" or type=="A2":
+    if case=="A1" or case=="A2":
         wtemp=np.fromfile(filepath_wtemp, count=-1, dtype=np.float64).reshape(nx_A, ny_A)
         nabla_T=np.fromfile(filepath_nabla_T, count=-1, dtype=np.float64).reshape(nx_A, ny_A)
         omega_bar_plus = wtemp / (CT_NORM_A * WCT_NORM_A)
         nabla_T_bar_plus = nabla_T / (CT_NORM_A * NCT_NORM_A)
-    elif type=="B1":
+    elif case=="B1":
         wtemp=np.fromfile(filepath_wtemp, count=-1, dtype=np.float64).reshape(nx_B1, ny_B1)
         nabla_T=np.fromfile(filepath_nabla_T, count=-1, dtype=np.float64).reshape(nx_B1, ny_B1)
         omega_bar_plus = wtemp / (CT_NORM_B1 * WCT_NORM_B1)
         nabla_T_bar_plus = nabla_T/ (CT_NORM_B1 * NCT_NORM_B1)
 
-    left_exclude, right_exclude=f_exclude_boundary(filter_index,type)
+    left_exclude, right_exclude=f_exclude_boundary(filter_index,case)
 
     nabla_T_bar_plus=exclude_boundaries(nabla_T_bar_plus, left_exclude, right_exclude)
     omega_bar_plus = exclude_boundaries(omega_bar_plus, left_exclude, right_exclude)
@@ -189,29 +189,29 @@ def get_fields(type, timestep, filter_index):
 #save unfiltered res so that we do not need to do all the preprocessing for every filter size
 
 def process_res_unfiltered():
-    for type in types:
-        if type=="A1" or type=="A2":
+    for case in cases:
+        if case=="A1" or case=="A2":
             for timestep in timesteps_A:
-                omega_plus, nabla_T_plus=get_fields(type, timestep, 0) 
+                omega_plus, nabla_T_plus=get_fields(case, timestep, 0) 
                 phi = np.zeros_like(omega_plus)
                 omega_star=omega_plus/omega_plus_max_A
                 nabla_T_star=nabla_T_plus/nabla_T_plus_max_A
                 phi[(omega_star > 0.4) & (nabla_T_star < 0.2)] = 1   
-                np.save(r"unfiltered_res\unfiltered_res-{}-{}.npy".format(type, timestep), phi)
+                np.save(r"unfiltered_res\unfiltered_res-{}-{}.npy".format(case, timestep), phi)
 
         else:
-            omega_plus, nabla_T_plus=get_fields(type, "80", 0)
+            omega_plus, nabla_T_plus=get_fields(case, "80", 0)
             omega_star=omega_plus/omega_plus_max_B1
             nabla_T_star=nabla_T_plus/nabla_T_plus_max_B1
             phi = np.zeros_like(omega_plus)
             phi[(omega_star > 0.4) & (nabla_T_star < 0.2)] = 1
-            np.save(r"unfiltered_res\unfiltered_res-{}-80.npy".format(type), phi)
+            np.save(r"unfiltered_res\unfiltered_res-{}-80.npy".format(case), phi)
 #process_res_unfiltered() #note that to do this, you need to comment out the exclude boundaries of get_phi_res and get_fields
 
-def get_phi_res(type, timestep, filter_index):
-    sig=get_sig(filter_index, type)
-    phi_unfiltered = np.load(r"unfiltered_res\unfiltered_res-{}-{}.npy".format(type, timestep))
-    left_exclude, right_exclude=f_exclude_boundary(filter_index,type)
+def get_phi_res(case, timestep, filter_index):
+    sig=get_sig(filter_index, case)
+    phi_unfiltered = np.load(r"unfiltered_res\unfiltered_res-{}-{}.npy".format(case, timestep))
+    left_exclude, right_exclude=f_exclude_boundary(filter_index,case)
     phi_unfiltered=exclude_boundaries(phi_unfiltered, left_exclude, right_exclude)
     phi_res = scipy.ndimage.gaussian_filter(phi_unfiltered, sigma=sig)
     return phi_res
@@ -234,13 +234,13 @@ plt.show()
 """
 
 #getting discretized arrays for phi_res
-def get_discrete_phi_res(type, filter_index, timestep):
+def get_discrete_phi_res(case, filter_index, timestep):
     freq_array=np.zeros((reso_dis,reso_dis))
     phi_res_aggregate=np.zeros((reso_dis,reso_dis))
     phi_res_average=np.zeros((reso_dis,reso_dis))
 
-    omega_bar_plus, nabla_T_bar_plus=get_fields(type, timestep,filter_index)
-    phi_res=get_phi_res(type, timestep,filter_index)
+    omega_bar_plus, nabla_T_bar_plus=get_fields(case, timestep,filter_index)
+    phi_res=get_phi_res(case, timestep,filter_index)
 
     nabla_T_bar_plus_range=(0,nabla_T_bar_plus.max()*(1+1/reso_dis))
     omega_bar_plus_range=(0,omega_bar_plus.max()*(1+1/reso_dis))
@@ -290,9 +290,9 @@ def load_model():
 load_model()
 
 #trying out model to understand characteristic function
-def try_nn( filter_index, real, timestep="80", type="B1", reso_dis=200):
+def try_nn( filter_index, real, timestep="80", case="B1", reso_dis=200):
     if real:
-        actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
+        actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
         omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
         nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
         phi_res_flat=actual_dis_phi_vals.flatten()
@@ -324,17 +324,17 @@ def try_nn( filter_index, real, timestep="80", type="B1", reso_dis=200):
     plt.show()
 
 def get_model_plots():
-    for type in types:
+    for case in cases:
         for timestep in timesteps_A:
-            if type=="B1" and timestep!="80":
+            if case=="B1" and timestep!="80":
                 continue
             else:
                 min_index=1
-                if type=="B1": #todo - if i get unfiltered nabla vals for case A, change this
+                if case=="B1": #todo - if i get unfiltered nabla vals for case A, change this
                     min_index=0
                 for filter_index in range(min_index, len(filter_sizes)):
-                    print("Plotting",type, timestep, filter_sizes[filter_index])
-                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
+                    print("Plotting",case, timestep, filter_sizes[filter_index])
+                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
                     omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
                     nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
                     phi_res_flat=actual_dis_phi_vals.flatten()
@@ -351,26 +351,26 @@ def get_model_plots():
                     fig, ax=plt.subplots(2)
                     scatter_pred=ax[0].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=80/reso_dis)
                     scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
-                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, type, timestep))
+                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, case, timestep))
                     plt.close()
 get_model_plots()
 
-#training model, including different timesteps, types, 
+#training model, including different timesteps, cases, 
 """
 for epoch in range(epochs):
     if epoch==20:
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate2) 
-    for type in types:
+    for case in cases:
         for timestep in timesteps_A:
-            if type=="B1" and timestep!="80":
+            if case=="B1" and timestep!="80":
                 continue
             else:
                 min_index=1
-                if type=="B1": #todo - if i get unfiltered nabla vals for case A, change this
+                if case=="B1": #todo - if i get unfiltered nabla vals for case A, change this
                     min_index=0
                 for filter_index in range(min_index, len(filter_sizes)):
-                    print(type, timestep, filter_sizes[filter_index], epoch+1)
-                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
+                    print(case, timestep, filter_sizes[filter_index], epoch+1)
+                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
                     omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
                     nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
                     phi_res_flat=actual_dis_phi_vals.flatten()
@@ -394,7 +394,7 @@ for epoch in range(epochs):
                     fig, ax=plt.subplots(2)
                     scatter_pred=ax[0].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=80/reso_dis)
                     scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
-                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, type, timestep))
+                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, case, timestep))
                     plt.close()
 
                     #adapting
@@ -426,21 +426,21 @@ def get_all_discretized_data():
     all_dis_omega_bar_plus=[]
     all_dis_phi_res=[]
     all_filter_sizes=[]
-    for type in types:
+    for case in cases:
             for timestep in timesteps_A:
-                if type=="B1" and timestep!="80":
+                if case=="B1" and timestep!="80":
                     continue
                 else:
                     min_index=1
-                    if type=="B1": #todo - if i get unfiltered nabla vals for case A, change this
+                    if case=="B1": #todo - if i get unfiltered nabla vals for case A, change this
                         min_index=0
                     for filter_index in range(min_index, len(filter_sizes)):
                         repeat_times=1
                         if filter_index==0: #I want to make it understand the unfiltered case better
                             repeat_times=2
                         for i in range(repeat_times):
-                            print(type, timestep, filter_sizes[filter_index])
-                            actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
+                            print(case, timestep, filter_sizes[filter_index])
+                            actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
                             omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
                             nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
                             phi_res_flat=actual_dis_phi_vals.flatten()
