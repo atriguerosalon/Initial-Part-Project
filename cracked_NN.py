@@ -64,9 +64,11 @@ reso_dis=65
 nabla_T_omega_sig=2 #idk what an appropriate value for this is (ig just print as you go along)
 
 # NN training params
-epochs=40
+epochs=250
+learning_rate0=1e-2
 learning_rate1=7e-4
 learning_rate2=4e-6
+learning_rate3=1e-6
 
 input_size = 3
 n_hidden1 = 30  # Number of neurons in the first hidden layer
@@ -74,21 +76,17 @@ n_hidden2 = 45  # Number of neurons in the second hidden layer
 n_hidden3 = 30  # Number of neurons in the third hidden layer
 output_size = 1
 # NN instantiation
-import torch
-
-import torch
 
 class MyNeuralNetwork(torch.nn.Module):
     def __init__(self, input_size, n_hidden1, n_hidden2, n_hidden3, output_size, dropout_prob=0.0003):
         super(MyNeuralNetwork, self).__init__()
-        self.fc1 = torch.nn.Linear(input_size, n_hidden1)
+        self.fc1 = torch.nn.Linear(input_size, n_hidden1, dtype=torch.float64)
         self.dropout1 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the first hidden layer
-        self.fc2 = torch.nn.Linear(n_hidden1, n_hidden2)
+        self.fc2 = torch.nn.Linear(n_hidden1, n_hidden2,dtype=torch.float64)
         self.dropout2 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the second hidden layer
-        self.fc3 = torch.nn.Linear(n_hidden2, n_hidden3)
+        self.fc3 = torch.nn.Linear(n_hidden2, n_hidden3, dtype=torch.float64)
         self.dropout3 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the third hidden layer
-        self.fc4 = torch.nn.Linear(n_hidden3, output_size)
-
+        self.fc4 = torch.nn.Linear(n_hidden3, output_size, dtype=torch.float64)
         self.sigmoid = torch.nn.Sigmoid()  # Sigmoid activation function (can be replaced with other activations)
 
     def forward(self, x, training=True):
@@ -112,7 +110,7 @@ class MyNeuralNetwork(torch.nn.Module):
 model = MyNeuralNetwork(input_size, n_hidden1, n_hidden2, n_hidden3, output_size)
 
 loss_fn = torch.nn.MSELoss(reduction='sum')
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1) 
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate0) 
 
 def f_exclude_boundary(filter_index, type):
   if type=="A1" or type=="A2":
@@ -278,11 +276,12 @@ def get_discrete_phi_res(type, filter_index, timestep):
 
 #load model (IMPORTANT - if this is dissabled, you will lose the model and have to retrain it from scratch)
 def load_model():
+    global model
     responded=False
     while not responded:
         decision=input("Do you wish to load the model? IMPORTANT - if you respond no, the model will have to be retrained from scratch.\n y/n: ")
-        if decision=='y':
-            model=torch.load("new_model_non-discretized")
+        if decision == 'y':
+            model = torch.load("new_model_discretized.pt")
             responded=True
         elif decision=='n':
             responded=True
@@ -310,7 +309,7 @@ def try_nn( filter_index, real, timestep="80", type="B1", reso_dis=200):
     phi_preds=[]
     for i in range(len(omega_bar_plus_flat)):
         inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_sizes[filter_index]/2]
-        inputs_tensor=torch.tensor(inputs, dtype=torch.float32)
+        inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
         phi_pred=model(inputs_tensor,training=False)
         phi_preds.append(phi_pred.detach().numpy())
 
@@ -323,6 +322,38 @@ def try_nn( filter_index, real, timestep="80", type="B1", reso_dis=200):
     else:
         scatter_pred=ax.scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=50/reso_dis)
     plt.show()
+
+def get_model_plots():
+    for type in types:
+        for timestep in timesteps_A:
+            if type=="B1" and timestep!="80":
+                continue
+            else:
+                min_index=1
+                if type=="B1": #todo - if i get unfiltered nabla vals for case A, change this
+                    min_index=0
+                for filter_index in range(min_index, len(filter_sizes)):
+                    print("Plotting",type, timestep, filter_sizes[filter_index])
+                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
+                    omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
+                    nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
+                    phi_res_flat=actual_dis_phi_vals.flatten()
+                    filter_size=filter_sizes[filter_index]/2
+                    phi_preds=[]
+                    
+                    for i in range(len(omega_bar_plus_flat)):
+                        inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size]
+                        inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
+                        phi_pred=model(inputs_tensor, training=False)
+                        phi_preds.append(phi_pred.detach().numpy())
+
+                    phi_preds=np.array(phi_preds)
+                    fig, ax=plt.subplots(2)
+                    scatter_pred=ax[0].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=80/reso_dis)
+                    scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
+                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, type, timestep))
+                    plt.close()
+get_model_plots()
 
 #training model, including different timesteps, types, 
 """
@@ -352,7 +383,7 @@ for epoch in range(epochs):
                     #validation before adaption, otherwise you always see how it has adapted after it has adapted - cheating a bit
                     for i in range(len(omega_bar_plus_flat)):
                         inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size]
-                        inputs_tensor=torch.tensor(inputs, dtype=torch.float32)
+                        inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
                         phi_pred=model(inputs_tensor, training=False)
                         phi_preds.append(phi_pred.detach().numpy())
 
@@ -373,10 +404,10 @@ for epoch in range(epochs):
                     for i in range(repeat_times):
                         for i in range(len(omega_bar_plus_flat)):
                             inputs=[omega_bar_plus_flat_shuffled[i], nabla_T_bar_plus_flat_shuffled[i], filter_size]
-                            inputs_tensor=torch.tensor(inputs, dtype=torch.float32)
+                            inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
                             phi_pred=model(inputs_tensor)
 
-                            loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float32))
+                            loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float64))
                             if i%500==0:
                                 print(i)
                 
@@ -385,7 +416,7 @@ for epoch in range(epochs):
                             loss.backward() #calculates the gradients
                             optimizer.step()
 
-                    torch.save(model, "new_model_non-discretized")
+                    torch.save(model, "new_model_discretized")
 """
 
 #second training function - since the first one has some 'biases'
@@ -438,53 +469,28 @@ def load_discretized_data():
     return all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes
 
 for epoch in range(epochs):
-    if epoch==int(epochs*0.4):
+    if epoch==int(epochs*0.1):
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1)
+    if epoch==int(epochs*0.3):
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate2) 
+    if epoch==int(epochs*0.7):
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate3)
     all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes=load_discretized_data()
     omega_bar_plus_flat_shuffled, nabla_T_bar_plus_flat_shuffled, phi_res_flat_shuffled, filter_sizes_shuffled = shuffle(
                     all_dis_omega_bar_plus,all_dis_nabla_T_bar_plus, all_dis_phi_res, all_filter_sizes, random_state=epoch)
     print(len(omega_bar_plus_flat_shuffled))
     for i in range(len(omega_bar_plus_flat_shuffled)):
         inputs=[omega_bar_plus_flat_shuffled[i], nabla_T_bar_plus_flat_shuffled[i], filter_sizes_shuffled[i]]
-        inputs_tensor=torch.tensor(inputs, dtype=torch.float32)
+        inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
         phi_pred=model(inputs_tensor)
 
-        loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float32))
+        loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float64))
         # Backpropagation
         optimizer.zero_grad()
         loss.backward() #calculates the gradients
         optimizer.step()
-        if i%5000==0:
+        
+        if i%10000==0:
             print("Epoch "+str(epoch+1), i)
-
-    torch.save(model, "new_model_non-discretized")
-
-    for type in types:
-        for timestep in timesteps_A:
-            if type=="B1" and timestep!="80":
-                continue
-            else:
-                min_index=1
-                if type=="B1": #todo - if i get unfiltered nabla vals for case A, change this
-                    min_index=0
-                for filter_index in range(min_index, len(filter_sizes)):
-                    print("Plotting",type, timestep, filter_sizes[filter_index], epoch+1)
-                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(type, filter_index, timestep)
-                    omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
-                    nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
-                    phi_res_flat=actual_dis_phi_vals.flatten()
-                    filter_size=filter_sizes[filter_index]/2
-                    phi_preds=[]
-                    #validation before adaption, otherwise you always see how it has adapted after it has adapted - cheating a bit
-                    for i in range(len(omega_bar_plus_flat)):
-                        inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size]
-                        inputs_tensor=torch.tensor(inputs, dtype=torch.float32)
-                        phi_pred=model(inputs_tensor, training=False)
-                        phi_preds.append(phi_pred.detach().numpy())
-
-                    phi_preds=np.array(phi_preds)
-                    fig, ax=plt.subplots(2)
-                    scatter_pred=ax[0].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=80/reso_dis)
-                    scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
-                    plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, type, timestep))
-                    plt.close()
+    torch.save(model, "new_model_discretized.pt")# todo- just changed the name, remember to change it to the actual file later (and push)
+    
