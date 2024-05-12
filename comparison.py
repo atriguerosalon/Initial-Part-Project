@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from scipy.ndimage import gaussian_filter
-from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value
+from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value, exclude_boundaries
 import scipy as sp
 
 #may or may not use:
@@ -64,8 +64,8 @@ def phi_field_res(filter_size):
 
 def phi_field_NN(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
-  phi_NN = np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")
-  phi_NN_bound=phi_NN[:][exclude_boundaries_L-1:len(phi_NN[0])-exclude_boundaries_R-1].T
+  phi_NN = np.flipud(np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")).T
+  phi_NN_bound=exclude_boundaries(phi_NN,exclude_boundaries_L, exclude_boundaries_R)
   return phi_NN_bound
 
 def phi_field_0th(filter_size):
@@ -80,6 +80,7 @@ plt.rcParams['axes.linewidth'] = 1.5
 def scatterplots(filter_size, ax2=None):
     x = phi_field_res(filter_size)[::-1].flatten()
     y = phi_field_NN(filter_size).flatten()
+    
     empty_intervals = []
     max_x_val = np.max(x)
     divisions = 20000
@@ -165,7 +166,7 @@ def compare_filter_sizes():
     #Set maximum size of the figure in pdf to 10MB
     plt.savefig("Filtering w. Diff Filter Sizes rast.pdf", dpi=500)
 
-compare_filter_sizes()
+#compare_filter_sizes() #plot here
 
 
 def plot_comparison_graphs():
@@ -215,7 +216,9 @@ def plot_comparison_graphs():
   plt.savefig("Graph Comparison")
   plt.show()
 
-#plot_comparison_graphs()
+plot_comparison_graphs() #plot here
+
+
 def plot_demo_graph():
   tick_size = 16
   rc_textsize = 18
@@ -272,7 +275,6 @@ def calculate_MSE(filter_size, NN_or_0th):
   beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
   boop = np.array([boo for bee in phi_field_NN(filter_size) for boo in bee])
   bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
-  MSE = mean_squared_error(beep, boop)
   if NN_or_0th=='NN':
     MSE = mean_squared_error(beep, boop)
   elif NN_or_0th=='0th':
@@ -300,13 +302,13 @@ def comparison_plot(MSE_or_Pearson):
   plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="NN/DNS", linewidth=1.5)
   plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/DNS', linewidth=1.5)
   plt.vlines(filter_sizes, 0, 1.05*max(y_NN), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
-  plt.xlim(0.47, 2.03)
+  plt.xlim(0.35, 2.15)
   if MSE_or_Pearson=='MSE':
-    plt.ylim(0.6*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
+    plt.ylim(0, 1.2*max(max(y_NN), max(y_0th)))
   elif MSE_or_Pearson == 'Pearson':
-    plt.ylim(0.95*min(min(y_NN), min(y_0th)), 1.05*max(y_NN))
+    plt.ylim(0, 1.05*max(y_NN))
   plt.xticks([i/4 for i in range(2,9)])
-  plt.tick_params(axis='both', which='major', direction='in', dpi=True, right=True, labelsize=15)
+  plt.tick_params(axis='both', which='major', direction='in', right=True, labelsize=15)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
   plt.legend(loc='best', fontsize=18, edgecolor='black', fancybox=False).get_frame().set_linewidth(1.5)
   if MSE_or_Pearson=="MSE":
@@ -314,4 +316,5 @@ def comparison_plot(MSE_or_Pearson):
   else:
     plt.ylabel("$r_{p}$", fontsize=18)
   plt.show()
-#comparison_plot('Pearson')
+
+#comparison_plot('MSE') #plot here
