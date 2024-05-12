@@ -109,6 +109,7 @@ def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     ct_field_star_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
     phi_0th = np.zeros_like(wcr_field_star_filtered)
     phi_0th[(wcr_field_star_filtered > 0.4) & (ct_field_star_filtered < 0.2)] = 1
+    phi_0th = gaussian_filter(phi_0th, sigma=sigma_value)
     return phi_0th
 
 def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0)):
@@ -210,8 +211,8 @@ if __name__ == '__main__':
         wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, (left_exclusion, right_exclusion))
         phi_0th_order = calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size)
         #Apply Gaussian filter
-        phi_0th_order = gaussian_filter(phi_0th_order, sigma=sigma_val)
-
+        #phi_0th_order = gaussian_filter(phi_0th_order, sigma=sigma_val)
+        #Changed function definition to include gaussian within the function
         # Plot the phi 0th order
         ax[i].imshow(phi_0th_order, cmap=create_custom_hot_cmap())
         ax[i].set_title(f"Filter size: {filter_size}")
