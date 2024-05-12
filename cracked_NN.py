@@ -256,7 +256,7 @@ def get_discrete_phi_res(case, filter_index, timestep):
     phi_res_flat=phi_res.flatten()
 
     for i in range(len(omega_bar_plus_flat)):
-        ind_omega=int((omega_bar_plus_flat[i]*reso_dis)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])-0.5)
+        ind_omega=int((omega_bar_plus_flat[i]*reso_dis)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])+0.5)
         ind_nabla_T=int((nabla_T_bar_plus_flat[i]*reso_dis)/(nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])+0.5)
         freq_array[ind_nabla_T][ind_omega]+=1
         phi_res_aggregate[ind_nabla_T][ind_omega] +=phi_res_flat[i]
