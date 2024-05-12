@@ -5,6 +5,7 @@ import os
 import matplotlib.colors as mcolors
 from scipy.ndimage import gaussian_filter
 from matplotlib.colors import LinearSegmentedColormap
+import torch
 
 # Constants
 #LOOK INTO MAKING THSE AS INPUT VARIABLES IN THE FUTURE!!!
@@ -17,9 +18,43 @@ TU = 1500.000  # K (reactant temperature)
 TB = 1623.47  # K (burn temperature)
 MAX_WCR = 1996.8891
 MAX_CT = 3931.0113
+DTH=0.0012904903  # m
+DU=0.2219636  # kg/m^3
+SL= 1.6585735551  # m/s
+WCT_NORM = DU*SL/DTH
+NCT_NORM = 1/DTH
 
 filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
+
+#need to define the function for the nn
+class MyNeuralNetwork(torch.nn.Module):
+    def __init__(self, input_size, n_hidden1, n_hidden2, n_hidden3, output_size, dropout_prob=0.0003):
+        super(MyNeuralNetwork, self).__init__()
+        self.fc1 = torch.nn.Linear(input_size, n_hidden1, dtype=torch.float64)
+        self.dropout1 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the first hidden layer
+        self.fc2 = torch.nn.Linear(n_hidden1, n_hidden2,dtype=torch.float64)
+        self.dropout2 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the second hidden layer
+        self.fc3 = torch.nn.Linear(n_hidden2, n_hidden3, dtype=torch.float64)
+        self.dropout3 = torch.nn.Dropout(p=dropout_prob)  # Dropout layer after the third hidden layer
+        self.fc4 = torch.nn.Linear(n_hidden3, output_size, dtype=torch.float64)
+        self.sigmoid = torch.nn.Sigmoid()  # Sigmoid activation function (can be replaced with other activations)
+
+    def forward(self, x, training=True):
+        out = self.fc1(x)
+        out = self.dropout1(out) if training else out  # Apply dropout only during training
+        out = self.sigmoid(out)
+
+        out = self.fc2(out)
+        out = self.dropout2(out) if training else out
+        out = self.sigmoid(out)
+
+        out = self.fc3(out)
+        out = self.dropout3(out) if training else out
+        out = self.sigmoid(out)
+
+        out = self.fc4(out)
+        return out
 
 # Function definitions
 def exclude_boundaries(field, left_exclusion, right_exclusion):
@@ -119,6 +154,13 @@ def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,
     phi = calculate_phi(wcr_field_star, ct_field_star)
     return wcr_field_star, ct_field_star, phi
 
+def get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_size):
+    data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, f_exclude_boundary(filter_size))
+    wcr_field, ct_field=calculate_fields(data_temp, data_reaction, TB, TU)
+    wcr_bar_field = gaussian_filter(wcr_field, sigma=sigma_value(filter_sizes[i]), mode='reflect')/WCT_NORM
+    ct_bar_field = gaussian_filter(ct_field, sigma=sigma_value(filter_sizes[i]), mode='reflect')/NCT_NORM
+    return wcr_bar_field, ct_bar_field
+
 def create_custom_cmap():
     res = 1024
     starting_val = 0.2
@@ -201,6 +243,30 @@ if __name__ == '__main__':
     filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
     fig, ax = plt.subplots(1, len(filter_sizes), figsize=(20, 10))
 
+    #get data for new NN
+
+
+    #load NN
+    model = torch.load("new_model_discretized.pt")
+
+    #save values for all fields in B1
+    for i in range(len(filter_sizes)):
+        wcr_bar_field, ct_bar_field=get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_sizes[i])
+        wcr_bar_plus_flat=wcr_bar_field.flatten()
+        ct_bar_plus_flat=ct_bar_field.flatten()
+        phi_NN_field_flat=[]
+        for j in range(len(wcr_bar_plus_flat)):
+            inputs=[wcr_bar_plus_flat[j], ct_bar_plus_flat[j], filter_sizes[i]/2]
+            inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
+            phi_pred=model(inputs_tensor,training=False)
+            phi_NN_field_flat.append(phi_pred.detach().numpy())
+        phi_NN_field = np.array(phi_NN_field_flat).reshape(wcr_bar_field.shape)
+        np.save(f"NewNNFields\\Field_Filter_{filter_sizes[i]}", phi_NN_field)
+        print(filter_sizes[i])
+
+
+
+    """
     for i, filter_size in enumerate(filter_sizes):
         #Apply gaussian filter to phi_0th_order
         sigma_val = sigma_value(filter_size)
@@ -222,3 +288,4 @@ if __name__ == '__main__':
         plt.savefig('figs/phi_0th_order.pdf', dpi=300)
         
     plt.show()
+    """

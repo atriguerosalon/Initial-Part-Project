@@ -5,6 +5,7 @@ from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value, exclude_boundaries
 import scipy as sp
 
+
 #may or may not use:
 import mpl_scatter_density
 import datashader as ds
@@ -62,11 +63,14 @@ def phi_field_res(filter_size):
   phi_res = gaussian_filter(phi, sigma=sigma_value(filter_size))
   return phi_res
 
-def phi_field_NN(filter_size):
+def phi_field_NN_old(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
   phi_NN = np.flipud(np.load(f"Phi_NN_data/Phi_NN_{filter_size}.npy")).T
   phi_NN_bound=exclude_boundaries(phi_NN,exclude_boundaries_L, exclude_boundaries_R)
   return phi_NN_bound
+
+def phi_field_NN_new(filter_size):
+   return np.load(f"NewNNFields\\Field_Filter_{filter_size}.npy")
 
 def phi_field_0th(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
@@ -79,7 +83,7 @@ plt.rcParams['axes.linewidth'] = 1.5
 
 def scatterplots(filter_size, ax2=None):
     x = phi_field_res(filter_size)[::-1].flatten()
-    y = phi_field_NN(filter_size).flatten()
+    y = phi_field_NN_old(filter_size).flatten()
     
     empty_intervals = []
     max_x_val = np.max(x)
@@ -199,7 +203,7 @@ def plot_comparison_graphs():
     #plotting actual graphs
 
     axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
-    axs[2,i].imshow(np.flipud(phi_field_NN(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[2,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
     axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
 
     #colorbar tings
@@ -258,29 +262,29 @@ def plot_demo_graph():
   plt.show()
 #plot_demo_graph()
 
-def calculate_pearson_r(filter_size, NN_or_0th):
+def calculate_pearson_r(filter_size, data_to_compare):
   beep = [val for sublist in phi_field_res(filter_size)[::-1] for val in sublist]
-  boop = [val for sublist in phi_field_NN(filter_size) for val in sublist]
+  boop = [val for sublist in phi_field_NN_old(filter_size) for val in sublist]
   bob = [val for sublist in phi_field_0th(filter_size) for val in sublist]
-  if NN_or_0th=='NN':
+  if data_to_compare=='NN':
     pearson_r = sp.stats.pearsonr(beep, boop)[0]
-  elif NN_or_0th=='0th':
+  elif data_to_compare=='0th':
     pearson_r = sp.stats.pearsonr(beep, bob)[0]
   else:
-    print(f"calculate_pearson_r only takes \'NN\' or \'0th\' as inputs, not {NN_or_0th}.")
+    print(f"calculate_pearson_r only takes \'NN\' or \'0th\' as inputs, not {data_to_compare}.")
     return 
   return pearson_r
 
-def calculate_MSE(filter_size, NN_or_0th):
+def calculate_MSE(filter_size, data_to_compare):
   beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
-  boop = np.array([boo for bee in phi_field_NN(filter_size) for boo in bee])
+  boop = np.array([boo for bee in phi_field_NN_old(filter_size) for boo in bee])
   bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
-  if NN_or_0th=='NN':
+  if data_to_compare=='NN':
     MSE = mean_squared_error(beep, boop)
-  elif NN_or_0th=='0th':
+  elif data_to_compare=='0th':
     MSE = mean_squared_error(beep, bob)
   else:
-    print(f"calculate_MSE only takes \'NN\' or \'0th\' as inputs, not {NN_or_0th}.")
+    print(f"calculate_MSE only takes \'NN\' or \'0th\' as inputs, not {data_to_compare}.")
     return 
   return MSE
 
