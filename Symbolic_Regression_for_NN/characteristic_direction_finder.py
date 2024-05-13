@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
+# Filter size
+filter_size = 0.5
 # Load the theoretical neural network data
-phi_NN = np.load('./Symbolic_Regression_for_NN/phi_NN_theoretical.npy')
+phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
 # Calculate gradients (differences) along both x and y directions
 grad_y, grad_x = np.gradient(phi_NN)
@@ -38,7 +40,7 @@ plt.quiver(
 # Add the perpendicular line at (0.71, 0.34)
 #plt.plot([0.71, 0.71 + orthogonal_direction[0]], [0.34, 0.34 + orthogonal_direction[1]], 'g-', label='Perpendicular Line')
 #Save the principal direction to a file
-np.save('./Symbolic_Regression_for_NN/characteristic_direction.npy', principal_direction)
+np.save(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}.npy', principal_direction)
 
 plt.colorbar(label='NN Prediction')
 plt.xlabel('Normalized X-axis (Reaction Rate)')

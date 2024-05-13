@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Filter size
+filter_size = 0.5
 # Load the actual x and y coordinates for the sigmoid values
 # The file should contain pairs: (x, y) and the associated sigmoid values
-_, fitted_values = np.load('./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values.npy')
-x_prime_fit, y_prime_fit = np.load('./Symbolic_Regression_for_NN/char_line_xy_values.npy')
+_, fitted_values = np.load(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values_{filter_size}.npy')
+x_prime_fit, y_prime_fit = np.load(f'./Symbolic_Regression_for_NN/char_line_xy_values_{filter_size}.npy')
 
 # Create grid points for interpolation
 grid_size = 100
@@ -28,7 +30,7 @@ plt.imshow(fitted_2d_values, extent=[0, 1, 0, 1], origin='lower', aspect='auto',
 plt.colorbar(label='Fitted Sigmoid Values')
 
 # Extract the fitted sigmoid parameters
-fitted_params = np.load('./Symbolic_Regression_for_NN/char_line_sigmoid_parameters.npy')
+fitted_params = np.load(f'./Symbolic_Regression_for_NN/char_line_sigmoid_parameters_{filter_size}.npy')
 beta_opt, x0_opt = fitted_params
 
 #Plot text with the sigmoid function
@@ -39,9 +41,9 @@ plt.ylabel('Temperature Gradient (Normalized)')
 plt.title(f'Sigmoid Function:\n1 / (1 + exp({beta_opt:.2f} * (s - {x0_opt:.2f})))')
 
 #Save the figure
-plt.savefig('./Symbolic_Regression_for_NN/fitted_2d_sigmoid.pdf')
+plt.savefig(f'./Symbolic_Regression_for_NN/fitted_2d_sigmoid_{filter_size}.pdf')
 #Save the figure in python format
-plt.savefig('./Symbolic_Regression_for_NN/fitted_2d_sigmoid.svg')
+plt.savefig(f'./Symbolic_Regression_for_NN/fitted_2d_sigmoid_{filter_size}.svg')
 plt.show()
 
 

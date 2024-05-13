@@ -3,6 +3,8 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
+# Filter size
+filter_size = 0.5
 # Example sigmoid function
 def sigmoid(x, beta, x0):
     return 1 / (1 + np.exp(-beta * (x - x0)))
@@ -16,8 +18,8 @@ def sigmoid(x, beta, x0):
 # Load dummy data
 #x_data, y_data = np.load('./Symbolic_Regression_for_NN/sigmoid_data.npy').T
 # Load the actual data here, 1st column is x_data, 2nd column is y_data
-x_data, y_data = np.load('./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final.npy')[1]
-real_x_data, real_y_data = np.load('./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final.npy')[0]
+x_data, y_data = np.load(f'./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final_{filter_size}.npy')[1]
+real_x_data, real_y_data = np.load(f'./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final_{filter_size}.npy')[0]
 
 
 # Fit the sigmoid to the data
@@ -32,12 +34,12 @@ y_fit = sigmoid(x_fit, beta_opt, x0_opt)
 r_squared = r2_score(y_data, sigmoid(x_data, *popt))
 
 #Save the parameters of the sigmoid function
-np.save('./Symbolic_Regression_for_NN/char_line_sigmoid_parameters.npy', popt)
+np.save(f'./Symbolic_Regression_for_NN/char_line_sigmoid_parameters_{filter_size}.npy', popt)
 # Save the fitted curve values
-np.save('./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values.npy', [x_fit, y_fit])
+np.save(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values.npy_{filter_size}', [x_fit, y_fit])
 
 # Save the corresponding x and y real values
-np.save('./Symbolic_Regression_for_NN/char_line_xy_values.npy', [real_x_data, real_y_data])
+np.save(f'./Symbolic_Regression_for_NN/char_line_xy_values_{filter_size}.npy', [real_x_data, real_y_data])
 
 # Plot real_x and real_y
 plt.plot(real_x_data, real_y_data, label='Real Data', color='green', linewidth=2)
