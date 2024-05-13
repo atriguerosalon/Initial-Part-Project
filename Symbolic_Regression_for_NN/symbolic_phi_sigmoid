@@ -1,0 +1,47 @@
+import numpy as np
+
+# Load necessary arrays: sigmoid fitted parameters, characteristic direction, and characteristic line
+sigmoid_params = np.load('./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values.npy')
+x_prime_fit, y_prime_fit, fitted_values = sigmoid_params.T
+characteristic_direction = np.load('./Symbolic_Regression_for_NN/characteristic_direction.npy')
+
+# Normalize characteristic direction
+char_dir_norm = characteristic_direction / np.linalg.norm(characteristic_direction)
+
+def project_to_characteristic_line(x, y):
+    """
+    Project a point (x, y) orthogonally onto the characteristic line.
+
+    Returns:
+        s: Parameter along the characteristic line (0 to 1)
+    """
+    # Shift to origin and apply the dot product to project onto the unit vector of the characteristic direction
+    point_vector = np.array([x, y]) - np.array([x_prime_fit[0], y_prime_fit[0]])
+    s = np.dot(point_vector, char_dir_norm)
+    
+    # Normalize to the [0, 1] range based on the characteristic line length
+    line_length = np.linalg.norm([x_prime_fit[-1] - x_prime_fit[0], y_prime_fit[-1] - y_prime_fit[0]])
+    s_normalized = s / line_length
+    return s_normalized
+
+def sigmoid_value(x, y):
+    """
+    Get the sigmoid value at a given (x, y) coordinate by projecting it onto the characteristic line.
+
+    Returns:
+        value: The fitted sigmoid value corresponding to the projected point
+    """
+    # Project the point onto the characteristic line
+    s_normalized = project_to_characteristic_line(x, y)
+
+    # Ensure s_normalized is within valid bounds
+    s_normalized = max(0, min(s_normalized, 1))
+
+    # Use interpolation to find the sigmoid value along the characteristic line
+    return np.interp(s_normalized, np.linspace(0, 1, len(fitted_values)), fitted_values)
+
+# Example usage:
+x_input = 0.6  # Adjust as needed
+y_input = 0.3  # Adjust as needed
+value = sigmoid_value(x_input, y_input)
+print(f"Sigmoid value at (x={x_input}, y={y_input}): {value}")
