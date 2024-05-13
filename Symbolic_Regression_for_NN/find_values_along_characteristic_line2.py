@@ -25,7 +25,8 @@ if filter_size == 0.5:
     s_values = np.linspace(0, (max_index - 68)  * np.sqrt(2), num_points) # -10.1 for the "" filter
 if filter_size == '':
     s_values = np.linspace(0, (max_index - 10.1)  * np.sqrt(2), num_points) # -10.1 for the "" filter
-
+if filter_size == 0.75:
+    s_values = np.linspace(0, (max_index - 65)  * np.sqrt(2), num_points) # -10.1 for the "" filter
 
 # Create coordinates along the characteristic direction
 x_line = x_start + s_values * np.cos(theta)
