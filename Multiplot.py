@@ -79,10 +79,10 @@ axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #maximum value in filtered fields
 max_filtered_value = max(np.max(wcr_field_filtered), np.max(ct_field_filtered), np.max(phi_res_filtered))
 # Plotting the filtered fields
-axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+0.00000000000000000000056)
+axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[1, 0].set_title('(d) ωcT* filtered')
 
-axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+.000000000000000000000039) #ask alejandro
+axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1) #ask alejandro
 #axs[1, 1].set_title('(e) |∇cT|* filtered')
 
 axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
