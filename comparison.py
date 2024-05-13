@@ -169,9 +169,9 @@ def compare_filter_sizes():
 
     #Set maximum size of the figure in pdf to 10MB
     plt.savefig("Filtering w. Diff Filter Sizes rast.pdf", dpi=500)
+    plt.close()
 
 #compare_filter_sizes() #plot here
-
 
 def plot_comparison_graphs():
   rc_textsize=18
@@ -201,10 +201,11 @@ def plot_comparison_graphs():
     axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=rc_textsize)
 
     #plotting actual graphs
+    vmax_val=max(phi_field_res(filter_sizes[i]).max(), phi_field_NN_old(filter_sizes[i]).max(), phi_field_0th(filter_sizes[i]).max())
 
-    axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
-    axs[2,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
-    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+    axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[2,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
 
     #colorbar tings
     tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
@@ -303,14 +304,14 @@ def comparison_plot(MSE_or_Pearson):
       y_0th.append(calculate_MSE(i, '0th'))
   else:
     print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
-  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="NN/DNS", linewidth=1.5)
-  plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/DNS', linewidth=1.5)
-  plt.vlines(filter_sizes, 0, 1.05*max(y_NN), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
+  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="NN/res", linewidth=1.5)
+  plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/res', linewidth=1.5)
+  plt.vlines(filter_sizes, 0, 1.05*max(max(y_NN), max(y_0th)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
   plt.xlim(0.35, 2.15)
   if MSE_or_Pearson=='MSE':
     plt.ylim(0, 1.2*max(max(y_NN), max(y_0th)))
   elif MSE_or_Pearson == 'Pearson':
-    plt.ylim(0, 1.05*max(y_NN))
+    plt.ylim(0, 1.05*max(max(y_NN), max(y_0th)))
   plt.xticks([i/4 for i in range(2,9)])
   plt.tick_params(axis='both', which='major', direction='in', right=True, labelsize=15)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
@@ -319,6 +320,9 @@ def comparison_plot(MSE_or_Pearson):
     plt.ylabel("$\\epsilon_{MSE}$", fontsize=18)
   else:
     plt.ylabel("$r_{p}$", fontsize=18)
+  plt.savefig(f"{MSE_or_Pearson}_Plot.pdf")
   plt.show()
+  plt.close()
 
-#comparison_plot('MSE') #plot here
+comparison_plot('MSE') #plot here
+comparison_plot("Pearson")

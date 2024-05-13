@@ -34,13 +34,16 @@ print(f'left_exclusion: {left_exclusion}, right_exclusion: {right_exclusion}')
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
+data_path_temp_filtered = "Ref_0th_Fields\\tilde-nablatemp-slice-B1-0000080000-049.raw"
+data_path_reaction_filtered ="Ref_0th_Fields\\zeroth-wtemp-slice-B1-0000080000-049.raw"
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
+wcr_field_filtered, ct_field_filtered, phi_res_filtered = filename_to_field(data_path_temp_filtered, data_path_reaction_filtered, exclude_boundary)
 
 # Apply Gaussian filters
-wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
-ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
-phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
+#wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
+#ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
+#phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
 
 #Print maximum wcr_field_filtered value
 print(f"Maximum value in wcr_field_filtered: {np.max(wcr_field_filtered)}")
@@ -82,7 +85,7 @@ max_filtered_value = max(np.max(wcr_field_filtered), np.max(ct_field_filtered), 
 axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+0.00000000000000000000056)
 #axs[1, 0].set_title('(d) ωcT* filtered')
 
-axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1+.000000000000000000000039) #ask alejandro
+im1=axs[1, 1].imshow(ct_field_filtered, cmap='jet', extent=extent_mm, vmin=0, vmax=1+.000000000000000000000039) #ask alejandro
 #axs[1, 1].set_title('(e) |∇cT|* filtered')
 
 axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
@@ -119,7 +122,8 @@ fig.subplots_adjust(left=0.05, right=0.90, bottom=0.10, top=0.95, wspace=0.1, hs
 cbar_ax = fig.add_axes([0.92, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
-im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
+# im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
+im = axs[0, 2].imshow(phi, cmap="jet", extent=extent_mm)
 
 # Create the colorbar
 cbar =fig.colorbar(im, cax=cbar_ax)
