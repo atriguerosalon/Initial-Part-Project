@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import map_coordinates
 
 # Filter size
-filter_size = 0.5
+filter_size = 0.75
 # Load the phi_NN_theoretical.npy array
 phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 

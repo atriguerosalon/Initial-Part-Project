@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
 # Filter size
-filter_size = 0.5
+filter_size = 2
 # Load the theoretical neural network data
 phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
@@ -46,5 +46,9 @@ plt.colorbar(label='NN Prediction')
 plt.xlabel('Normalized X-axis (Reaction Rate)')
 plt.ylabel('Normalized Y-axis (Temperature Gradient)')
 plt.legend()
-plt.title('Characteristic Direction Identification')
+plt.title(f'Characteristic Direction Identification, filter size: {filter_size}')
+# Save the plot 
+plt.savefig(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}.pdf')
+
 plt.show()
+
