@@ -1,0 +1,37 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Load the phi_NN_theoretical.npy array
+phi_NN = np.load('./Symbolic_Regression_for_NN/phi_NN_theoretical.npy')
+# Find max and min values of phi_NN
+max_phi_NN = np.max(phi_NN)
+min_phi_NN = np.min(phi_NN)
+print('Max value of phi_NN:', max_phi_NN)
+print('Min value of phi_NN:', min_phi_NN)
+# Create a grid for the x and y coordinates
+x = np.linspace(0, 1, phi_NN.shape[1])
+y = np.linspace(0, 1, phi_NN.shape[0])
+X, Y = np.meshgrid(x, y)
+
+# Create a 3D plot
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot the surface using the phi_NN data
+surf = ax.plot_surface(X, Y, phi_NN, cmap='viridis', edgecolor='none')
+
+# Add labels and title
+ax.set_xlabel('Nabla Temp (Normalized)')
+ax.set_ylabel('Reaction Rate (Normalized)')
+ax.set_zlabel('Phi NN Theoretical')
+ax.set_title('3D Surface Plot of phi_NN_theoretical.npy')
+
+# Add a color bar to show the color mapping
+fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
+
+# Save the plot as a .pdf file
+plt.savefig('./Symbolic_Regression_for_NN/3D_Surface_Plot_phi_NN_theoretical.pdf')
+
+# Show the plot
+plt.show()

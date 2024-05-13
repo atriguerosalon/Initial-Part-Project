@@ -1,0 +1,27 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the phi_NN_theoretical.npy array, with the filter in the name
+filter_size = 0.5
+phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
+
+
+# Max
+# Create a 2D plot
+plt.figure(figsize=(8, 6))
+
+# Display the data as an image with a colormap
+img = plt.imshow(phi_NN, cmap='viridis', extent=[0, 5, 0, 2], origin='lower', aspect='auto')
+
+# Add a color bar to show the mapping of z-values
+plt.colorbar(img, label='Phi NN Theoretical')
+
+# Add labels and title
+plt.xlabel('Nabla Temp (Normalized)')
+plt.ylabel('Reaction Rate (Normalized)')
+plt.title('2D Plot of phi_NN_theoretical.npy')
+
+# Save the plot, with the filter in the name
+plt.savefig(f'./Symbolic_Regression_for_NN/2D_phi_NN_theoretical_{filter_size}.pdf', )
+# Show the plot
+plt.show()
