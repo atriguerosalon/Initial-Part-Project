@@ -256,7 +256,7 @@ def get_discrete_phi_res(case, filter_index, timestep):
     phi_res_flat=phi_res.flatten()
 
     for i in range(len(omega_bar_plus_flat)):
-        ind_omega=int((omega_bar_plus_flat[i]*reso_dis)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])-0.5)
+        ind_omega=int((omega_bar_plus_flat[i]*reso_dis)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])+0.5)
         ind_nabla_T=int((nabla_T_bar_plus_flat[i]*reso_dis)/(nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])+0.5)
         freq_array[ind_nabla_T][ind_omega]+=1
         phi_res_aggregate[ind_nabla_T][ind_omega] +=phi_res_flat[i]
@@ -308,7 +308,7 @@ def try_nn( filter_index, real, timestep="80", case="B1", reso_dis=200):
         
     phi_preds=[]
     for i in range(len(omega_bar_plus_flat)):
-        inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_sizes[filter_index]/2]
+        inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_sizes[filter_index]]
         inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
         phi_pred=model(inputs_tensor,training=False)
         phi_preds.append(phi_pred.detach().numpy())
@@ -322,6 +322,32 @@ def try_nn( filter_index, real, timestep="80", case="B1", reso_dis=200):
     else:
         scatter_pred=ax.scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_preds, s=50/reso_dis)
     plt.show()
+
+def get_theoretical_vals():
+    for filter_size in filter_sizes:
+        res=500
+        nabla_T_range=(0,nabla_T_plus_max_B1)
+        omega_range=(0,omega_plus_max_B1)
+
+        omega_discrete = np.arange(omega_range[0], omega_range[1], (omega_range[1]-omega_range[0])/res)
+        nabla_T_discrete = np.arange(nabla_T_range[0], nabla_T_range[1],  (nabla_T_range[1]-nabla_T_range[0])/res)
+        grid_omega, grid_nabla_T = np.meshgrid(omega_discrete, nabla_T_discrete)
+        omega_bar_plus_flat=grid_omega.flatten()
+        nabla_T_bar_plus_flat=grid_nabla_T.flatten()
+        phi_NN_field=[]
+        for i in range(len(omega_bar_plus_flat)):
+            inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size]
+            inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
+            phi_pred=model(inputs_tensor, training=False)
+            phi_NN_field.append(phi_pred.detach().numpy())
+
+        phi_NN_field=np.array(phi_NN_field).reshape(grid_omega.shape)
+        print(filter_size)
+        plt.pcolor(grid_omega, grid_nabla_T, phi_NN_field)
+        plt.colorbar()
+        plt.savefig(f"NewNNPredTheoretical\\{filter_size}.png")
+        plt.close()
+#get_theoretical_vals()
 
 def get_model_plots():
     for case in cases:
@@ -353,7 +379,7 @@ def get_model_plots():
                     scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
                     plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, case, timestep))
                     plt.close()
-get_model_plots()
+#get_model_plots()
 
 #training model, including different timesteps, cases, 
 """
@@ -420,7 +446,8 @@ for epoch in range(epochs):
 """
 
 #second training function - since the first one has some 'biases'
-
+#this one is good, but i just dont want to train atm
+"""
 def get_all_discretized_data():
     all_dis_nabla_T_bar_plus=[]
     all_dis_omega_bar_plus=[]
@@ -494,3 +521,4 @@ for epoch in range(epochs):
             print("Epoch "+str(epoch+1), i)
     torch.save(model, "new_model_discretized.pt")# todo- just changed the name, remember to change it to the actual file later (and push)
     
+"""
