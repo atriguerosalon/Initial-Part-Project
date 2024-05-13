@@ -9,9 +9,12 @@ _, fitted_values = np.load(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitt
 x_prime_fit, y_prime_fit = np.load(f'./Symbolic_Regression_for_NN/char_line_xy_values_{filter_size}.npy')
 
 # Create grid points for interpolation
-grid_size = 100
-x_grid = np.linspace(0, 1, grid_size)
-y_grid = np.linspace(0, 1, grid_size)
+# Set the grid size according to the number of points in the fitted values
+grid_size = len(fitted_values)  
+print(grid_size) # Gives 1000
+print(x_prime_fit.shape) # Gives (1000,)
+x_grid = np.linspace(0, 5, grid_size)
+y_grid = np.linspace(0, 5, grid_size)
 xx, yy = np.meshgrid(x_grid, y_grid)
 
 # Interpolate the fitted values onto the 2D grid

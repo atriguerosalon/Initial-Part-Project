@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import map_coordinates
-
+# Filter size
+filter_size = 0.5
 # Load the phi_NN_theoretical array
-phi_NN = np.load('./Symbolic_Regression_for_NN/phi_NN_theoretical.npy')
+phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
 # Load the characteristic direction and normalize it
-principal_direction = np.load('./Symbolic_Regression_for_NN/characteristic_direction.npy')
+principal_direction = np.load(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}.npy')
 norm = np.linalg.norm(principal_direction)
 principal_direction_unit = -principal_direction / norm
 
@@ -20,7 +21,10 @@ print(f"Angle (in degrees): {np.degrees(theta)}")
 
 # Determine the number of points to sample and initialize the path coordinates
 num_points = 1000
-s_values = np.linspace(0, (max_index - 10.1)  * np.sqrt(2), num_points)
+if filter_size == 0.5:
+    s_values = np.linspace(0, (max_index - 68)  * np.sqrt(2), num_points) # -10.1 for the "" filter
+if filter_size == '':
+    s_values = np.linspace(0, (max_index - 10.1)  * np.sqrt(2), num_points) # -10.1 for the "" filter
 
 
 # Create coordinates along the characteristic direction
@@ -38,7 +42,7 @@ values_along_line = map_coordinates(phi_NN, [y_line, x_line], order=1)
 s_values_normalized = s_values / s_values[-1]
 
 # Save the extracted values to a file
-np.save('./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final.npy', [[x_line/100, y_line/100], [s_values, values_along_line]])
+np.save(f'./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final_{filter_size}.npy', [[x_line/100, y_line/100], [s_values, values_along_line]])
 
 # Plot the characteristic line on the same plot
 plt.plot(x_line, y_line, color='red', label='Characteristic Line')
