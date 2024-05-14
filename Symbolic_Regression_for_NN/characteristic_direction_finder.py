@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-# Filter size
-filter_size = 2
+# Filter size list
+filter_size = 0.5
+
 # Load the theoretical neural network data
 phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
@@ -22,6 +23,9 @@ orthogonal_direction = pca.components_[1]
 # Get angle in degrees of the principal direction
 angle = np.arctan2(principal_direction[1], principal_direction[0]) * 180 / np.pi
 
+# Obtain percentage of variance explained by the principal direction
+variance_explained = pca.explained_variance_ratio_[0] * 100
+print(f"Variance Explained by Principal Direction: {variance_explained:.2f}%")
 # Print the characteristic direction
 print(f"Principal Gradient Direction: {principal_direction}")
 print(f"Orthogonal (Characteristic) Direction: {orthogonal_direction}")
@@ -57,4 +61,3 @@ plt.title(f'Characteristic Direction Identification, filter size: {filter_size}'
 plt.savefig(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}.pdf')
 
 plt.show()
-
