@@ -60,8 +60,11 @@ plt.show()
 plt.scatter(x_data, y_data, label='Neural Network Data', color='blue', s=5)
 plt.plot(x_fit, y_fit, label=f'Fitted Sigmoid\nbeta={beta_opt:.2f}, x0={x0_opt:.2f}', color='red')
 # Add rsq to the plot
-plt.text(0.5, 0.5, f'R² = {r_squared:.2f}', fontsize=12, ha='center')
+plt.text(20, 0.5, f'R² = {r_squared:.2f}', fontsize=12, ha='center')
 plt.legend()
 plt.xlabel('Input Feature (Aligned Axis)')
 plt.ylabel('Sigmoid Output')
+
+# Save the plot
+plt.savefig(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_{filter_size}.pdf')
 plt.show()
