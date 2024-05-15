@@ -292,7 +292,7 @@ def load_model():
         decision=input("Do you wish to load the model? IMPORTANT - if you respond no, the model will have to be retrained from scratch.\n y/n: ")
         if decision == 'y':
             #model = torch.load("new_model_discretized.pt")
-            model=torch.load("Models_During_Training\new_model_discretized40.pt")
+            model=torch.load("Models_During_Training\\new_model_discretized40.pt")
             responded=True
         elif decision=='n':
             responded=True
@@ -353,10 +353,13 @@ def get_theoretical_vals():
             phi_NN_field.append(phi_pred.detach().numpy())
 
         phi_NN_field=np.array(phi_NN_field).reshape(grid_omega.shape)
+        np.save(f"NewNNPredTheoretical\\Array{filter_size}.npy", phi_NN_field)
         print(filter_size)
-        plt.pcolor(grid_omega, grid_nabla_T, phi_NN_field)
+        plt.pcolor(grid_omega/omega_plus_max_B1, grid_nabla_T/nabla_T_plus_max_B1, phi_NN_field, rasterized=True)
+        plt.xlabel('$\\overline{\\omega}_{c_{T}}^*$', fontsize=25)
+        plt.ylabel('$| \\nabla \\tilde{c}_{T}|^*$', fontsize=25)
         plt.colorbar()
-        plt.savefig(f"NewNNPredTheoretical\\{filter_size}.png")
+        plt.savefig(f"NewNNPredTheoretical\\{filter_size}.pdf", bbox_inches="tight")
         plt.close()
 
 def get_model_plots():
@@ -503,8 +506,6 @@ def load_discretized_data(res):
     all_filter_sizes=np.load(f"Discretized_Data\\all_filter_sizes{res}.npy")
     return all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes
 
-model = torch.load("")
-
 def train_NN():
     MSE_vals=[[1,1,1,1,1,1,1]]
     MSE_vals=np.array(MSE_vals)
@@ -567,7 +568,8 @@ def train_NN():
 #get_all_discretized_data(100)
 #get_all_discretized_data(65)
 
-train_NN()
+#train_NN()
 
-#get_theoretical_vals()
+get_theoretical_vals()
 #get_model_plots()
+
