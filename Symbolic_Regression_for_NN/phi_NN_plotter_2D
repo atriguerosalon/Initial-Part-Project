@@ -2,9 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the phi_NN_theoretical.npy array, with the filter in the name
-filter_size = 0.5
+filter_size = 1
 phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
+# Print the shape of the array
+print(phi_NN.shape)
 
 # Max
 # Create a 2D plot

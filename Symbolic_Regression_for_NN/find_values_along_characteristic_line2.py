@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import map_coordinates
 # Filter size
-filter_size = 0.5
+filter_size = 1
 # Load the phi_NN_theoretical array
 phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
 
@@ -27,7 +27,8 @@ if filter_size == '':
     s_values = np.linspace(0, (max_index - 10.1)  * np.sqrt(2), num_points) # -10.1 for the "" filter
 if filter_size == 0.75:
     s_values = np.linspace(0, (max_index - 65)  * np.sqrt(2), num_points) # -10.1 for the "" filter
-
+if filter_size == 1:
+    s_values = np.linspace(0, (max_index - 62)  * np.sqrt(2), num_points) # -10.1 for the "" filter	
 # Create coordinates along the characteristic direction
 x_line = x_start + s_values * np.cos(theta)
 y_line = y_start + s_values * np.sin(theta)

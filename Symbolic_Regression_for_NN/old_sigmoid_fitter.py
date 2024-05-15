@@ -3,8 +3,10 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
+# Label size
+label_size = 16
 # Filter size
-filter_size = 0.5
+filter_size = 1
 # Example sigmoid function
 def sigmoid(x, beta, x0):
     return 1 / (1 + np.exp(-beta * (x - x0)))
@@ -25,14 +27,16 @@ print()
 real_x_data, real_y_data = np.load(f'./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final_{filter_size}.npy')[0]
 # Print the shape of the np
 print(np.load(f'./Symbolic_Regression_for_NN/values_along_characteristic_line_phi_NN_final_{filter_size}.npy').shape)
+'''
 
 # Plot x_data and y_data, next to real_x_data and real_y_data
 plt.scatter(x_data, y_data, label='Neural Network Data', color='blue', s=5)
 plt.scatter(real_x_data, real_y_data, label='Real Data', color='green', s=5)
 plt.legend()
 plt.xlabel('Input Feature (Aligned Axis)')
-plt.ylabel('Sigmoid Output')
+plt.ylabel('$\\overline{\\Phi}_{NN}$')
 plt.show()
+'''
 
 # Fit the sigmoid to the data
 popt, pcov = curve_fit(sigmoid, x_data, y_data, p0=[0, 0])  # Initial guesses for beta and x0
@@ -53,18 +57,25 @@ np.save(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_values_{filter_s
 # Save the corresponding x and y real values
 np.save(f'./Symbolic_Regression_for_NN/char_line_xy_values_{filter_size}.npy', [real_x_data, real_y_data])
 
+'''
 # Plot real_x and real_y
 plt.plot(real_x_data, real_y_data, label='Real Data', color='green', linewidth=2)
 plt.show()	
+'''
 
-plt.scatter(x_data, y_data, label='Neural Network Data', color='blue', s=5)
-plt.plot(x_fit, y_fit, label=f'Fitted Sigmoid\nbeta={beta_opt:.2f}, x0={x0_opt:.2f}', color='red')
+plt.scatter(x_data[::-1], y_data, label='Neural Network Data', color='blue', s=5)
+plt.plot(x_fit[::-1], y_fit, label=f'Fitted Sigmoid\nβ={beta_opt:.2f}, $x_0$={x0_opt:.2f}', color='red')
 # Add rsq to the plot
-plt.text(20, 0.5, f'R² = {r_squared:.2f}', fontsize=12, ha='center')
-plt.legend()
-plt.xlabel('Input Feature (Aligned Axis)')
-plt.ylabel('Sigmoid Output')
+plt.text(155, 0.6, f'R² = {r_squared:.2f}', fontsize=label_size, ha='center')
+
+# Set the font size of the ticks
+plt.xticks(fontsize=label_size)
+plt.yticks(fontsize=label_size)
+# Set legend font size
+plt.legend(prop={'size': label_size})
+plt.xlabel('Input Feature (Aligned Axis)', fontsize=label_size)
+plt.ylabel('$\\overline{\\Phi}$', fontsize=label_size)
 
 # Save the plot
-plt.savefig(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_{filter_size}.pdf')
+plt.savefig(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_{filter_size}.pdf', bbox_inches='tight', pad_inches=0)
 plt.show()

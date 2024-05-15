@@ -1,0 +1,35 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the two arrays
+filter_size = 1  # Assume the same filter size for both arrays
+fitted_2d_values = np.load(f'./Symbolic_Regression_for_NN/fitted_2d_sigmoid_{filter_size}.npy')
+phi_NN = np.load(f'./Symbolic_Regression_for_NN/phi_NN_theoretical_{filter_size}.npy')
+
+# Ensure both arrays are of the same shape
+if fitted_2d_values.shape != phi_NN.shape:
+    # Change the resolution of the fitted_2d_values array to match the phi_NN array
+    fitted_2d_values = fitted_2d_values[::2, ::2]
+
+
+
+# Calculate the error between the two arrays
+error = np.abs(phi_NN - fitted_2d_values)
+
+# Compute MSE for the whole array
+MSE = np.mean(error**2)
+print(f'MSE: {MSE}')
+
+# Plot the error
+plt.figure(figsize=(8, 6))
+plt.imshow(error, cmap='jet', extent=[0, 1, 0, 1], origin='lower', aspect='auto')
+
+# Show MSE in the plot
+plt.text(0.8, 0.9, f'MSE: {MSE:.2e}', fontsize=12, color='white', ha='center')
+
+cbar = plt.colorbar().set_label(label='$\epsilon$', size = 12)
+
+plt.xlabel('$\\overline{\\omega}{c{T}}^*$', fontsize=12)
+plt.ylabel('$\\overline{\\omega}{c{T}}^*$', fontsize=12)
+plt.savefig(f'./Symbolic_Regression_for_NN/error_plot_{filter_size}.pdf', bbox_inches='tight', pad_inches=0.0)
+plt.show()

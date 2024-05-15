@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
+
+# Label size
+label_size = 16
 # Filter size list
 filter_sizes = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
 # Principal direction list
@@ -55,38 +58,57 @@ for filter_size in filter_sizes:
         angles='xy', scale_units='xy', scale=0.2, label='Orthogonal (Characteristic) Direction'
     )
 
+    # Add text label with variance explained to the legend, pointing in the principal direction
+    plt.quiver(0.5, 0.5, principal_direction[0]/10, principal_direction[1]/10, color='white', scale=1, label=f'Variance Explained: {variance_explained:.2f}%')
+
     # Add the perpendicular line at (0.71, 0.34)
     #plt.plot([0.71, 0.71 + orthogonal_direction[0]], [0.34, 0.34 + orthogonal_direction[1]], 'g-', label='Perpendicular Line')
     #Save the principal direction to a file
     np.save(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}.npy', principal_direction)
 
-    plt.colorbar(label='NN Prediction')
-    plt.xlabel('Normalized X-axis (Reaction Rate)')
-    plt.ylabel('Normalized Y-axis (Temperature Gradient)')
+    # Properly capture the colorbar object
+    cbar = plt.colorbar()
+    cbar.set_label(label="$\\overline{\\Phi}_{NN}$", size=label_size)
 
+    # Change tick size of the colorbar
+    cbar.ax.tick_params(labelsize=label_size)  # Set tick label size
+
+
+    plt.xlabel('$\\overline{\\omega}{c_{T}}^*$', fontsize=label_size)
+    plt.ylabel('$| \\nabla \\tilde{c_{T}}|^*$', fontsize=label_size)
+    plt.xticks(fontsize=label_size)	
+    plt.yticks(fontsize=label_size)
     plt.legend()
 
                 
     #plt.title(f'Characteristic Direction Identification, filter size: {filter_size}')
-    # Save the plot 
-    plt.savefig(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}_loop.pdf')
+    # Save the plot plt.savefig('filename.png', bbox_inches='tight', pad_inches=0)
+
+    plt.savefig(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}_loop.pdf', bbox_inches='tight', pad_inches=0)
     plt.close()
 
     #plt.show()
 plt.close()
 # Plot the angles of the principal directions
 plt.figure()
+
 plt.plot(filter_sizes, principal_directions, marker='o')
-plt.xlabel('Filter Size')
-plt.ylabel('Principal Direction Angle (degrees)')
+
+# Set ticks to match the filter sizes
+plt.xticks(filter_sizes)
+
+plt.xlabel('$\\Delta /\\delta_{th}$', fontsize=label_size)
+plt.ylabel('$\\Theta$', fontsize=label_size)
 #plt.title('Principal Direction Angle vs. Filter Size')
-plt.savefig(f'./Symbolic_Regression_for_NN/principal_direction_angles.pdf')
+plt.savefig(f'./Symbolic_Regression_for_NN/principal_direction_angles.pdf', bbox_inches='tight', pad_inches=0)
 plt.show()
 
 plt.close()
 # Plot the variance explained by the principal directions
 plt.figure()
 plt.plot(filter_sizes, variance_explained_list, marker='o')
+plt.xticks(fontsize=label_size)	
+plt.yticks(fontsize=label_size)
 plt.xlabel('Filter Size')
 plt.ylabel('Variance Explained (%)')
 #plt.title('Variance Explained by Principal Direction vs. Filter Size')
