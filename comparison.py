@@ -311,9 +311,9 @@ def comparison_plot(MSE_or_Pearson):
       y_newNN.append(calculate_MSE(i, 'newNN'))
   else:
     print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
-  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="$NN_{lit}$/res", linewidth=1.5)
-  plt.plot(filter_sizes, y_newNN, 'r', marker='o', markersize=8, label='$NN_{new}$/res', linewidth=1.5)
-  plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/res', linewidth=1.5)
+  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="$NN_{lit}$/res", linewidth=1.5, rasterized=True)
+  plt.plot(filter_sizes, y_newNN, 'r', marker='o', markersize=8, label='$NN_{new}$/res', linewidth=1.5, rasterized=True)
+  plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/res', linewidth=1.5, rasterized=True)
   plt.vlines(filter_sizes, 0, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
   plt.xlim(0.35, 2.15)
   if MSE_or_Pearson=='MSE':
@@ -332,14 +332,29 @@ def comparison_plot(MSE_or_Pearson):
   plt.show()
   plt.close()
 
-
+def plot_theoretical_change_new_NN(filter_size1, filter_size2):
+  if filter_size1 not in filter_sizes:
+     print(f"{filter_size1} not a valid filter size")
+     return
+  if filter_size2 not in filter_sizes:
+     print(f"{filter_size2} not a valid filter size")
+     return
+  
+  phi_theo1=np.load("NewNNPredTheoretical\Array0.5.npy")
+  phi_theo2=np.load("NewNNPredTheoretical\Array2.0.npy")
+  diff=phi_theo2-phi_theo1
+  plt.pcolor(diff)
+  plt.colorbar()
+  plt.suptitle("$\phi_{NN}$("+str(filter_size2)+")-$\phi_{NN}$("+str(filter_size1)+")")
+  plt.show()
 
 #run the functions here:
 
 #compare_filter_sizes() #plot here
 
 #remember that before applying this, you need to run data_prep
-plot_comparison_graphs() #plot here
+#plot_comparison_graphs() #plot here
 
-comparison_plot('MSE') #plot here
-comparison_plot("Pearson")
+#comparison_plot('MSE') #plot here
+#comparison_plot("Pearson")
+#plot_theoretical_change_new_NN(0.5, 2)
