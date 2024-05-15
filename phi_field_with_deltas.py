@@ -8,6 +8,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable #never used this before 
 
 
 if __name__ == '__main__':
+    # Label size
+    label_size = 18
+
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['font.family'] = 'STIXGeneral'
     
@@ -57,8 +60,8 @@ if __name__ == '__main__':
 
     #ax.set_title('Reaction Rate Field with Phi Contour')
     #Set label font size
-    ax.set_xlabel('$x$ (mm)', fontsize=15)
-    ax.set_ylabel('$y$ (mm)', fontsize=15)
+    ax.set_xlabel('$x$ (mm)', fontsize= label_size)
+    ax.set_ylabel('$y$ (mm)', fontsize= label_size)
 
     # Overlay the black contour of the phi field (not the filtered one)
     # Use levels=[0.5] to draw the contour at the middle of the phi range (0 and 1)
@@ -83,7 +86,7 @@ if __name__ == '__main__':
         ax.axvline(x=original_extent_mm[1] - pos - base_exclusion_right_mm, color='black', linestyle='--', linewidth=2)
 
     #Change font of the numbers on the axes
-    ax.tick_params(axis='both', which='major', labelsize=15)
+    ax.tick_params(axis='both', which='major', labelsize=label_size)
 
     # Create a new axes on the right which will be used for the colorbar
     divider = make_axes_locatable(ax)
@@ -91,11 +94,12 @@ if __name__ == '__main__':
 
     #Set colorbar font size
     cbar = fig.colorbar(im, cax=cax)
-    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label(label="$\\overline{\\Phi}_{res}$", size=label_size)
+    cbar.ax.tick_params(labelsize= label_size)
 
     # Save the figure
     if not os.path.exists('final_figs'):
         os.makedirs('final_figs')
-    plt.savefig('final_figs/phi_contour_with_deltas.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('final_figs/phi_contour_with_deltas.pdf', bbox_inches='tight', pad_inches=0)
     plt.tight_layout()
     plt.show()

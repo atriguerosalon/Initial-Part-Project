@@ -3,6 +3,8 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'STIXGeneral'
 # Label size
 label_size = 16
 # Filter size
@@ -66,13 +68,21 @@ plt.show()
 plt.scatter(x_data[::-1], y_data, label='Neural Network Data', color='blue', s=5)
 plt.plot(x_fit[::-1], y_fit, label=f'Fitted Sigmoid\nβ={beta_opt:.2f}, $x_0$={x0_opt:.2f}', color='red')
 # Add rsq to the plot
-plt.text(155, 0.6, f'R² = {r_squared:.2f}', fontsize=label_size, ha='center')
+plt.text(145, 0.65, f'R² = {r_squared:.8f}', fontsize=label_size, ha='center')
 
+# Set width of the contour lines to 1.5
+plt.gca().spines['top'].set_linewidth(1.5)
+plt.gca().spines['right'].set_linewidth(1.5)
+plt.gca().spines['bottom'].set_linewidth(1.5)
+plt.gca().spines['left'].set_linewidth(1.5)
 # Set the font size of the ticks
 plt.xticks(fontsize=label_size)
 plt.yticks(fontsize=label_size)
 # Set legend font size
-plt.legend(prop={'size': label_size})
+# Make the legend have a square frame
+plt.legend(loc='best', fontsize=label_size, edgecolor='black', fancybox=False).get_frame().set_linewidth(1)
+
+
 plt.xlabel('Input Feature (Aligned Axis)', fontsize=label_size)
 plt.ylabel('$\\overline{\\Phi}$', fontsize=label_size)
 

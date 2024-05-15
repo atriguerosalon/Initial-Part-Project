@@ -4,6 +4,9 @@ from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary	
 import os
 
+# Label size
+label_size = 18
+
 # Add desired font settings
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'STIXGeneral'
@@ -39,7 +42,7 @@ data_path_temp_filtered = "Ref_0th_Fields\\tilde-nablatemp-slice-B1-0000080000-0
 data_path_reaction_filtered ="Ref_0th_Fields\\zeroth-wtemp-slice-B1-0000080000-049.raw"
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
-wcr_field_filtered, ct_field_filtered, phi_res_filtered = filename_to_field(data_path_temp_filtered, data_path_reaction_filtered, exclude_boundary)
+wcr_field_filtered, ct_field_filtered, phi_res_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value), gaussian_filter(ct_field_star, sigma=sigma_value), gaussian_filter(phi, sigma=sigma_value)
 
 # Apply Gaussian filters
 #wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
@@ -103,12 +106,12 @@ axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vma
 # Set the labels and titles as per your requirement
 for ax in axs.flat:
     #x and y in latex format font
-    ax.set_xlabel(r'$x$ (mm)', fontsize=15)
-    ax.set_ylabel(r'$y$ (mm)', fontsize=15)
+    ax.set_xlabel(r'$x$ (mm)', fontsize=label_size+2)
+    ax.set_ylabel(r'$y$ (mm)', fontsize=label_size+2)
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 for ax in axs.flat:
-    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.tick_params(axis='both', which='major', labelsize=label_size)
     ax.label_outer()
 
 subplot_labels = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
@@ -125,20 +128,20 @@ for i, ax in enumerate(axs.flat):
             fontweight='normal', va='top', ha='left', color='black')
     
 # Adjust the subplots to make space for the colorbar
-fig.subplots_adjust(left=0.05, right=0.90, bottom=0.10, top=0.95, wspace=0.1, hspace=0.15)
+fig.subplots_adjust(left=0.09, right=0.90, bottom=0.10, top=0.95, wspace=0.05, hspace=0.15)
 
 # Add the colorbar to the right of the subplots
 cbar_ax = fig.add_axes([0.92, 0.1, 0.025, 0.85])
 
 # Choose any image for creating the colorbar since all images use the same colormap and range
 # im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
-im = axs[0, 2].imshow(phi, cmap="jet", extent=extent_mm)
+im = axs[0, 2].imshow(phi, cmap=white_jet, extent=extent_mm)
 
 # Create the colorbar
 cbar =fig.colorbar(im, cax=cbar_ax)
 
 #Set colorbar font size
-cbar.ax.tick_params(labelsize=12)
+cbar.ax.tick_params(labelsize=label_size)
 
 #Save figure as pdf
 if not os.path.exists('final_figs'):
