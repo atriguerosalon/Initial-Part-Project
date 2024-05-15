@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import scipy.ndimage
 import torch
 from sklearn.utils import shuffle
+from comparison import calculate_MSE
+from data_preparation import load_phi_field_NN_new
 
 # spatial constants
 nx_B1, ny_B1 = 384, 384
@@ -36,8 +38,10 @@ NCT_NORM_A = 1.0 / DTH_A
 
 omega_plus_max_B1= 1996.8891/WCT_NORM_B1
 nabla_T_plus_max_B1 = 3931.0113/NCT_NORM_B1
-omega_plus_max_A = omega_plus_max_B1 #todo - change these when you have the normalization info
-nabla_T_plus_max_A = nabla_T_plus_max_B1 #todo - change these when you have the normalization info
+omega_plus_max_A1 = 3467.06161/WCT_NORM_A
+nabla_T_plus_max_A1 = 4447.89830/NCT_NORM_A
+omega_plus_max_A2 = 3339.96234/WCT_NORM_A
+nabla_T_plus_max_A2 = 3250.13781/NCT_NORM_A
 
 # standard deviation for gaussian filter
 fwidth_n_B1 = np.array(['000', '025', '037', '049', '062', '074', '086', '099'])
@@ -64,16 +68,18 @@ reso_dis=65
 nabla_T_omega_sig=2 #idk what an appropriate value for this is (ig just print as you go along)
 
 # NN training params
-epochs=250
-learning_rate0=1e-2
-learning_rate1=7e-4
-learning_rate2=4e-6
-learning_rate3=1e-6
+epochs=200
+batch_size=32
+learning_rate0=5e-5
+learning_rate1=8.5e-4 #dont go above 1e-3 5e-4 worked well 0.0048 or smth like that (8e-4 seems worse)
+learning_rate2=3e-7
+learning_rate3=5e-3
+learning_rate4=8e-9
 
 input_size = 3
-n_hidden1 = 30  # Number of neurons in the first hidden layer
-n_hidden2 = 45  # Number of neurons in the second hidden layer
-n_hidden3 = 30  # Number of neurons in the third hidden layer
+n_hidden1 = 40  # Number of neurons in the first hidden layer
+n_hidden2 = 40  # Number of neurons in the second hidden layer
+n_hidden3 = 40  # Number of neurons in the third hidden layer
 output_size = 1
 # NN instantiation
 
@@ -110,7 +116,7 @@ class MyNeuralNetwork(torch.nn.Module):
 model = MyNeuralNetwork(input_size, n_hidden1, n_hidden2, n_hidden3, output_size)
 
 loss_fn = torch.nn.MSELoss(reduction='sum')
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate0) 
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1) 
 
 def f_exclude_boundary(filter_index, case):
   if case=="A1" or case=="A2":
@@ -194,8 +200,12 @@ def process_res_unfiltered():
             for timestep in timesteps_A:
                 omega_plus, nabla_T_plus=get_fields(case, timestep, 0) 
                 phi = np.zeros_like(omega_plus)
-                omega_star=omega_plus/omega_plus_max_A
-                nabla_T_star=nabla_T_plus/nabla_T_plus_max_A
+                if case=="A1":
+                    omega_star=omega_plus/omega_plus_max_A1
+                    nabla_T_star=nabla_T_plus/nabla_T_plus_max_A1
+                elif case=="A2":
+                    omega_star=omega_plus/omega_plus_max_A2
+                    nabla_T_star=nabla_T_plus/nabla_T_plus_max_A2
                 phi[(omega_star > 0.4) & (nabla_T_star < 0.2)] = 1   
                 np.save(r"unfiltered_res\unfiltered_res-{}-{}.npy".format(case, timestep), phi)
 
@@ -234,18 +244,18 @@ plt.show()
 """
 
 #getting discretized arrays for phi_res
-def get_discrete_phi_res(case, filter_index, timestep):
-    freq_array=np.zeros((reso_dis,reso_dis))
-    phi_res_aggregate=np.zeros((reso_dis,reso_dis))
-    phi_res_average=np.zeros((reso_dis,reso_dis))
+def get_discrete_phi_res(case, filter_index, timestep, res):
+    freq_array=np.zeros((res,res))
+    phi_res_aggregate=np.zeros((res,res))
+    phi_res_average=np.zeros((res,res))
 
     omega_bar_plus, nabla_T_bar_plus=get_fields(case, timestep,filter_index)
     phi_res=get_phi_res(case, timestep,filter_index)
 
-    nabla_T_bar_plus_range=(0,nabla_T_bar_plus.max()*(1+1/reso_dis))
-    omega_bar_plus_range=(0,omega_bar_plus.max()*(1+1/reso_dis))
-    omega_bar_plus_discrete = np.arange(omega_bar_plus_range[0], omega_bar_plus_range[1], (omega_bar_plus_range[1]-omega_bar_plus_range[0])/reso_dis)
-    nabla_T_bar_plus_discrete = np.arange(nabla_T_bar_plus_range[0], nabla_T_bar_plus_range[1],  (nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])/reso_dis)
+    nabla_T_bar_plus_range=(0,nabla_T_bar_plus.max()*(1+1/res))
+    omega_bar_plus_range=(0,omega_bar_plus.max()*(1+1/res))
+    omega_bar_plus_discrete = np.arange(omega_bar_plus_range[0], omega_bar_plus_range[1], (omega_bar_plus_range[1]-omega_bar_plus_range[0])/res)
+    nabla_T_bar_plus_discrete = np.arange(nabla_T_bar_plus_range[0], nabla_T_bar_plus_range[1],  (nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])/res)
     omega_bar_plus_grid, nabla_T_bar_plus_grid = np.meshgrid(omega_bar_plus_discrete, nabla_T_bar_plus_discrete)
     actual_dis_phi_vals=[]
     actual_dis_nabla_T_bar_plus_vals=[]
@@ -256,8 +266,8 @@ def get_discrete_phi_res(case, filter_index, timestep):
     phi_res_flat=phi_res.flatten()
 
     for i in range(len(omega_bar_plus_flat)):
-        ind_omega=int((omega_bar_plus_flat[i]*reso_dis)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])+0.5)
-        ind_nabla_T=int((nabla_T_bar_plus_flat[i]*reso_dis)/(nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])+0.5)
+        ind_omega=int((omega_bar_plus_flat[i]*res)/(omega_bar_plus_range[1]-omega_bar_plus_range[0])+0.5)
+        ind_nabla_T=int((nabla_T_bar_plus_flat[i]*res)/(nabla_T_bar_plus_range[1]-nabla_T_bar_plus_range[0])+0.5)
         freq_array[ind_nabla_T][ind_omega]+=1
         phi_res_aggregate[ind_nabla_T][ind_omega] +=phi_res_flat[i]
     for i in range(len(freq_array)):
@@ -281,7 +291,8 @@ def load_model():
     while not responded:
         decision=input("Do you wish to load the model? IMPORTANT - if you respond no, the model will have to be retrained from scratch.\n y/n: ")
         if decision == 'y':
-            model = torch.load("new_model_discretized.pt")
+            #model = torch.load("new_model_discretized.pt")
+            model=torch.load("Models_During_Training\new_model_discretized40.pt")
             responded=True
         elif decision=='n':
             responded=True
@@ -292,15 +303,15 @@ load_model()
 #trying out model to understand characteristic function
 def try_nn( filter_index, real, timestep="80", case="B1", reso_dis=200):
     if real:
-        actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
+        actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep, 100)
         omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
         nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
         phi_res_flat=actual_dis_phi_vals.flatten()
         fig, ax=plt.subplots(2)
         scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=50/reso_dis)
     else:
-        actual_dis_omega_bar_plus_vals=np.linspace(0, omega_plus_max_B1, reso_dis)
-        actual_dis_nabla_T_bar_plus_vals=np.linspace(0, nabla_T_plus_max_B1, reso_dis)
+        actual_dis_omega_bar_plus_vals=np.linspace(0, max(omega_plus_max_A1, omega_plus_max_A2, omega_plus_max_B1), reso_dis)
+        actual_dis_nabla_T_bar_plus_vals=np.linspace(0, max(nabla_T_plus_max_A1, nabla_T_plus_max_A2, nabla_T_plus_max_B1), reso_dis)
         omega_bar_plus_grid, nabla_T_bar_plus_grid=np.meshgrid(actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals)
         omega_bar_plus_flat=omega_bar_plus_grid.flatten()
         nabla_T_bar_plus_flat=nabla_T_bar_plus_grid.flatten()
@@ -326,8 +337,8 @@ def try_nn( filter_index, real, timestep="80", case="B1", reso_dis=200):
 def get_theoretical_vals():
     for filter_size in filter_sizes:
         res=500
-        nabla_T_range=(0,nabla_T_plus_max_B1)
-        omega_range=(0,omega_plus_max_B1)
+        nabla_T_range=(0,max(nabla_T_plus_max_A1, nabla_T_plus_max_A2, nabla_T_plus_max_B1))
+        omega_range=(0,max(omega_plus_max_A1, omega_plus_max_A2, omega_plus_max_B1))
 
         omega_discrete = np.arange(omega_range[0], omega_range[1], (omega_range[1]-omega_range[0])/res)
         nabla_T_discrete = np.arange(nabla_T_range[0], nabla_T_range[1],  (nabla_T_range[1]-nabla_T_range[0])/res)
@@ -336,7 +347,7 @@ def get_theoretical_vals():
         nabla_T_bar_plus_flat=grid_nabla_T.flatten()
         phi_NN_field=[]
         for i in range(len(omega_bar_plus_flat)):
-            inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size]
+            inputs=[omega_bar_plus_flat[i], nabla_T_bar_plus_flat[i], filter_size/2]
             inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
             phi_pred=model(inputs_tensor, training=False)
             phi_NN_field.append(phi_pred.detach().numpy())
@@ -347,7 +358,6 @@ def get_theoretical_vals():
         plt.colorbar()
         plt.savefig(f"NewNNPredTheoretical\\{filter_size}.png")
         plt.close()
-#get_theoretical_vals()
 
 def get_model_plots():
     for case in cases:
@@ -360,7 +370,7 @@ def get_model_plots():
                     min_index=0
                 for filter_index in range(min_index, len(filter_sizes)):
                     print("Plotting",case, timestep, filter_sizes[filter_index])
-                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
+                    actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep, 100)
                     omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
                     nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
                     phi_res_flat=actual_dis_phi_vals.flatten()
@@ -379,10 +389,10 @@ def get_model_plots():
                     scatter_actual=ax[1].scatter(omega_bar_plus_flat, nabla_T_bar_plus_flat, c=phi_res_flat, s=80/reso_dis)
                     plt.savefig(r"ModelPreds\Filter{}\{}-{}.jpeg".format(filter_size*2, case, timestep))
                     plt.close()
-#get_model_plots()
 
 #training model, including different timesteps, cases, 
 """
+
 for epoch in range(epochs):
     if epoch==20:
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate2) 
@@ -447,8 +457,8 @@ for epoch in range(epochs):
 
 #second training function - since the first one has some 'biases'
 #this one is good, but i just dont want to train atm
-"""
-def get_all_discretized_data():
+
+def get_all_discretized_data(res):
     all_dis_nabla_T_bar_plus=[]
     all_dis_omega_bar_plus=[]
     all_dis_phi_res=[]
@@ -467,7 +477,7 @@ def get_all_discretized_data():
                             repeat_times=2
                         for i in range(repeat_times):
                             print(case, timestep, filter_sizes[filter_index])
-                            actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep)
+                            actual_dis_omega_bar_plus_vals, actual_dis_nabla_T_bar_plus_vals, actual_dis_phi_vals=get_discrete_phi_res(case, filter_index, timestep, res)
                             omega_bar_plus_flat=actual_dis_omega_bar_plus_vals.flatten()
                             nabla_T_bar_plus_flat=actual_dis_nabla_T_bar_plus_vals.flatten()
                             phi_res_flat=actual_dis_phi_vals.flatten()
@@ -481,44 +491,83 @@ def get_all_discretized_data():
     all_dis_omega_bar_plus=np.array(all_dis_omega_bar_plus)
     all_dis_phi_res=np.array(all_dis_phi_res)
     all_filter_sizes=np.array(all_filter_sizes)
-    np.save("Discretized_Data\\all_dis_nabla_T_bar_plus).npy", all_dis_nabla_T_bar_plus)
-    np.save("Discretized_Data\\all_dis_omega_bar_plus.npy", all_dis_omega_bar_plus)
-    np.save("Discretized_Data\\all_dis_phi_res).npy", all_dis_phi_res)
-    np.save("Discretized_Data\\all_filter_sizes).npy", all_filter_sizes)
+    np.save(f"Discretized_Data\\all_dis_nabla_T_bar_plus{res}.npy", all_dis_nabla_T_bar_plus)
+    np.save(f"Discretized_Data\\all_dis_omega_bar_plus{res}.npy", all_dis_omega_bar_plus)
+    np.save(f"Discretized_Data\\all_dis_phi_res{res}.npy", all_dis_phi_res)
+    np.save(f"Discretized_Data\\all_filter_sizes{res}.npy", all_filter_sizes)
 
-#get_all_discretized_data()
-
-def load_discretized_data():
-    all_dis_nabla_T_bar_plus=np.load("Discretized_Data\\all_dis_nabla_T_bar_plus).npy")
-    all_dis_omega_bar_plus=np.load("Discretized_Data\\all_dis_omega_bar_plus.npy")
-    all_dis_phi_res=np.load("Discretized_Data\\all_dis_phi_res).npy")
-    all_filter_sizes=np.load("Discretized_Data\\all_filter_sizes).npy")
+def load_discretized_data(res):
+    all_dis_nabla_T_bar_plus=np.load(f"Discretized_Data\\all_dis_nabla_T_bar_plus{res}.npy")
+    all_dis_omega_bar_plus=np.load(f"Discretized_Data\\all_dis_omega_bar_plus{res}.npy")
+    all_dis_phi_res=np.load(f"Discretized_Data\\all_dis_phi_res{res}.npy")
+    all_filter_sizes=np.load(f"Discretized_Data\\all_filter_sizes{res}.npy")
     return all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes
 
-for epoch in range(epochs):
-    if epoch==int(epochs*0.1):
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1)
-    if epoch==int(epochs*0.3):
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate2) 
-    if epoch==int(epochs*0.7):
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate3)
-    all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes=load_discretized_data()
-    omega_bar_plus_flat_shuffled, nabla_T_bar_plus_flat_shuffled, phi_res_flat_shuffled, filter_sizes_shuffled = shuffle(
-                    all_dis_omega_bar_plus,all_dis_nabla_T_bar_plus, all_dis_phi_res, all_filter_sizes, random_state=epoch)
-    print(len(omega_bar_plus_flat_shuffled))
-    for i in range(len(omega_bar_plus_flat_shuffled)):
-        inputs=[omega_bar_plus_flat_shuffled[i], nabla_T_bar_plus_flat_shuffled[i], filter_sizes_shuffled[i]]
-        inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
-        phi_pred=model(inputs_tensor)
+model = torch.load("")
 
-        loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float64))
-        # Backpropagation
-        optimizer.zero_grad()
-        loss.backward() #calculates the gradients
-        optimizer.step()
-        
-        if i%10000==0:
-            print("Epoch "+str(epoch+1), i)
-    torch.save(model, "new_model_discretized.pt")# todo- just changed the name, remember to change it to the actual file later (and push)
-    
-"""
+def train_NN():
+    MSE_vals=[[1,1,1,1,1,1,1]]
+    MSE_vals=np.array(MSE_vals)
+    #res=30
+    res=65
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1)
+    all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes=load_discretized_data(res)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1) 
+    MSE_for_epoch=np.array([])
+    for epoch in range(epochs):
+        if epoch==4:
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate3)
+            #res=60
+            #all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes=load_discretized_data(res)
+        #if epoch==int(epochs*0.7):
+            #optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate3)
+            #res=120
+            #all_dis_nabla_T_bar_plus, all_dis_omega_bar_plus, all_dis_phi_res, all_filter_sizes=load_discretized_data(res)
+        array_mean=np.mean(MSE_for_epoch)
+        if array_mean<0.009:
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate1)
+        if array_mean<0.006:
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate2)
+        if array_mean<0.0035:
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate4)
+        print(array_mean, optimizer)
+        MSE_for_epoch=np.array([])
+        omega_bar_plus_flat_shuffled, nabla_T_bar_plus_flat_shuffled, phi_res_flat_shuffled, filter_sizes_shuffled = shuffle(
+                        all_dis_omega_bar_plus,all_dis_nabla_T_bar_plus, all_dis_phi_res, all_filter_sizes, random_state=epoch)
+        print(len(omega_bar_plus_flat_shuffled))
+        for i in range(len(omega_bar_plus_flat_shuffled)):
+            inputs=[omega_bar_plus_flat_shuffled[i], nabla_T_bar_plus_flat_shuffled[i], filter_sizes_shuffled[i]]
+            inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
+            phi_pred=model(inputs_tensor)
+
+            loss = loss_fn(phi_pred, torch.tensor([phi_res_flat_shuffled[i]], dtype=torch.float64))
+            # Backpropagation
+            optimizer.zero_grad()
+            loss.backward() #calculates the gradients
+            optimizer.step()
+            
+            if i%10000==0:
+                print("Epoch "+str(epoch+1), i)
+        torch.save(model, r'Models_During_Training\\new_model_discretized{}.pt'.format(epoch))# todo- just changed the name, remember to change it to the actual file later (and push)
+        load_phi_field_NN_new(epoch)
+        for filter in filter_sizes[1:]:
+            MSE=calculate_MSE(filter, "newNN")
+            MSE_for_epoch=np.append(MSE_for_epoch, MSE)
+        MSE_vals=np.append(MSE_vals, MSE_for_epoch)
+        print(MSE_for_epoch, epoch)
+        np.save("MSE_vals_training", MSE_vals)
+    get_model_plots()
+
+
+
+#run functions here
+
+#get_all_discretized_data(30)
+#get_all_discretized_data(60)
+#get_all_discretized_data(100)
+#get_all_discretized_data(65)
+
+train_NN()
+
+#get_theoretical_vals()
+#get_model_plots()

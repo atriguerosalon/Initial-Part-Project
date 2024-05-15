@@ -4,6 +4,7 @@ from sklearn.metrics import mean_squared_error
 from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value, exclude_boundaries
 import scipy as sp
+import torch
 
 
 #may or may not use:
@@ -41,7 +42,7 @@ def exclude_boundary(filter_size):
   index = filter_sizes.index(filter_size)
   actual_filter_size = fwidth_n[index]
   # Exclusion boundaries
-  base_exclusion_left = 0
+  base_exclusion_left = 25
   base_exclusion_right = 0
   additional_exclusion = 0.5 * actual_filter_size  # Adjust according to cell size if needed
 
@@ -70,7 +71,7 @@ def phi_field_NN_old(filter_size):
   return phi_NN_bound
 
 def phi_field_NN_new(filter_size):
-   return np.load(f"NewNNFields\\Field_Filter_{filter_size}.npy")
+   return np.flipud(np.load(f"NewNNFields\\Field_Filter_{filter_size}.npy"))
 
 def phi_field_0th(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
@@ -131,7 +132,7 @@ def scatterplots(filter_size, ax2=None):
     ax2.scatter(x, y, s=scatter_s, color='k', alpha=0.15, rasterized=True)
     print("Made it here, post scatter")
     ax2.plot([0, 1.5], [0, 1.5], linestyle='--', marker='', c='midnightblue', lw=lw)
-    ax2.set_xlim(0, max(y)*1.06)
+    ax2.set_xlim(0, max(x)*1.06)
     ax2.set_ylim(0, max(y)*1.06)
     ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
     ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
@@ -171,8 +172,6 @@ def compare_filter_sizes():
     plt.savefig("Filtering w. Diff Filter Sizes rast.pdf", dpi=500)
     plt.close()
 
-#compare_filter_sizes() #plot here
-
 def plot_comparison_graphs():
   rc_textsize=18
   height_ratios=[0.1,2,2,2]
@@ -180,10 +179,10 @@ def plot_comparison_graphs():
   for i in range(len(filter_sizes)):
      width_ratios.append(len(get_boundaries(filter_sizes[i])[0]))
   fig, axs=plt.subplots(4,len(filter_sizes), gridspec_kw={'height_ratios': height_ratios, 'width_ratios': width_ratios})
-  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
+  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN, new}$","$\\overline{\\Phi}_{NN,lit}$"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
-    axs[i+1,0].text(-7, 4.5, row_titles[i], fontsize=22, fontfamily='serif')
+    axs[i+1,0].text(-10, 4.5, row_titles[i], fontsize=22, fontfamily='serif')
     axs[i+1,0].axes.set_yticks([0,2,4,6,8,10], labels=[0,2,4,6,8,10], fontsize=14)
     axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-0.75, fontsize=rc_textsize)
   #hiding unnecessary axes
@@ -201,18 +200,18 @@ def plot_comparison_graphs():
     axs[len(row_titles),i].axes.set_xlabel('x (mm)',labelpad=0.5,fontsize=rc_textsize)
 
     #plotting actual graphs
-    vmax_val=max(phi_field_res(filter_sizes[i]).max(), phi_field_NN_old(filter_sizes[i]).max(), phi_field_0th(filter_sizes[i]).max())
-
+    vmax_val=np.array([phi_field_res(filter_sizes[i]), phi_field_NN_new(filter_sizes[i]), phi_field_NN_old(filter_sizes[i])]).max()
+    print(phi_field_res(filter_sizes[i]).max(), phi_field_NN_new(filter_sizes[i]).max(), phi_field_NN_old(filter_sizes[i]).max())
     axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
-    axs[2,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
-    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[2,i].imshow(np.flipud(phi_field_NN_new(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[3,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
 
     #colorbar tings
     tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
     tick_labels=["" for i in tick_pos]
     tick_labels[0]=str(0)
     tick_labels[-1]=str(np.floor(phi_field_res(filter_sizes[i]).max()*10)/10) #idk why this dont work
-    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal', fraction=0.047*len(x)/384)
+    plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal', fraction=0.046*len(x)/384, pad=0.4)
     axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False, fontsize=16)
     axs[0,i].xaxis.set_ticks_position('top')
   
@@ -220,8 +219,6 @@ def plot_comparison_graphs():
   fig.suptitle("$\\Delta /\\delta_{th}$",x=0.535, y=0.045, fontsize=22)
   plt.savefig("Graph Comparison")
   plt.show()
-
-plot_comparison_graphs() #plot here
 
 
 def plot_demo_graph():
@@ -264,13 +261,16 @@ def plot_demo_graph():
 #plot_demo_graph()
 
 def calculate_pearson_r(filter_size, data_to_compare):
-  beep = [val for sublist in phi_field_res(filter_size)[::-1] for val in sublist]
-  boop = [val for sublist in phi_field_NN_old(filter_size) for val in sublist]
-  bob = [val for sublist in phi_field_0th(filter_size) for val in sublist]
+  beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
+  boop = np.array([boo for bee in phi_field_NN_old(filter_size) for boo in bee])
+  bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
+  bub = np.array([boo for bee in phi_field_NN_new(filter_size) for boo in bee])
   if data_to_compare=='NN':
     pearson_r = sp.stats.pearsonr(beep, boop)[0]
   elif data_to_compare=='0th':
     pearson_r = sp.stats.pearsonr(beep, bob)[0]
+  elif data_to_compare=='newNN':
+    pearson_r = sp.stats.pearsonr(beep, bub)[0]
   else:
     print(f"calculate_pearson_r only takes \'NN\' or \'0th\' as inputs, not {data_to_compare}.")
     return 
@@ -278,12 +278,16 @@ def calculate_pearson_r(filter_size, data_to_compare):
 
 def calculate_MSE(filter_size, data_to_compare):
   beep = np.array([boo for bee in  phi_field_res(filter_size)[::-1] for boo in bee])
-  boop = np.array([boo for bee in phi_field_NN_old(filter_size) for boo in bee])
-  bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
+  
   if data_to_compare=='NN':
+    boop = np.array([boo for bee in phi_field_NN_old(filter_size) for boo in bee])
     MSE = mean_squared_error(beep, boop)
   elif data_to_compare=='0th':
+    bob = np.array([boo for bee in phi_field_0th(filter_size) for boo in bee])
     MSE = mean_squared_error(beep, bob)
+  elif data_to_compare=='newNN':
+    bub = np.array([boo for bee in phi_field_NN_new(filter_size) for boo in bee])
+    MSE = mean_squared_error(beep, bub)
   else:
     print(f"calculate_MSE only takes \'NN\' or \'0th\' as inputs, not {data_to_compare}.")
     return 
@@ -294,24 +298,28 @@ plt.rcParams['axes.linewidth'] = 1.5
 def comparison_plot(MSE_or_Pearson):
   y_NN=[]
   y_0th=[]
+  y_newNN=[]
   if MSE_or_Pearson=="Pearson":
     for i in filter_sizes:
       y_NN.append(calculate_pearson_r(i, 'NN'))
       y_0th.append(calculate_pearson_r(i, '0th'))
+      y_newNN.append(calculate_pearson_r(i, 'newNN'))
   elif MSE_or_Pearson=="MSE":
     for i in filter_sizes:
       y_NN.append(calculate_MSE(i, 'NN'))
       y_0th.append(calculate_MSE(i, '0th'))
+      y_newNN.append(calculate_MSE(i, 'newNN'))
   else:
     print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
-  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="NN/res", linewidth=1.5)
+  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="$NN_{lit}$/res", linewidth=1.5)
+  plt.plot(filter_sizes, y_newNN, 'r', marker='o', markersize=8, label='$NN_{new}$/res', linewidth=1.5)
   plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/res', linewidth=1.5)
-  plt.vlines(filter_sizes, 0, 1.05*max(max(y_NN), max(y_0th)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
+  plt.vlines(filter_sizes, 0, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
   plt.xlim(0.35, 2.15)
   if MSE_or_Pearson=='MSE':
-    plt.ylim(0, 1.2*max(max(y_NN), max(y_0th)))
+    plt.ylim(0, 1.2*max(max(y_NN), max(y_0th), max(y_newNN)))
   elif MSE_or_Pearson == 'Pearson':
-    plt.ylim(0, 1.05*max(max(y_NN), max(y_0th)))
+    plt.ylim(0, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)))
   plt.xticks([i/4 for i in range(2,9)])
   plt.tick_params(axis='both', which='major', direction='in', right=True, labelsize=15)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
@@ -323,6 +331,15 @@ def comparison_plot(MSE_or_Pearson):
   plt.savefig(f"{MSE_or_Pearson}_Plot.pdf")
   plt.show()
   plt.close()
+
+
+
+#run the functions here:
+
+#compare_filter_sizes() #plot here
+
+#remember that before applying this, you need to run data_prep
+plot_comparison_graphs() #plot here
 
 comparison_plot('MSE') #plot here
 comparison_plot("Pearson")

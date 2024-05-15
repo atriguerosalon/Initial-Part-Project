@@ -6,6 +6,7 @@ import matplotlib.colors as mcolors
 from scipy.ndimage import gaussian_filter
 from matplotlib.colors import LinearSegmentedColormap
 import torch
+import os
 
 # Constants
 #LOOK INTO MAKING THSE AS INPUT VARIABLES IN THE FUTURE!!!
@@ -26,6 +27,9 @@ NCT_NORM = 1/DTH
 
 filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
+
+data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
+data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
 #need to define the function for the nn
 class MyNeuralNetwork(torch.nn.Module):
@@ -127,7 +131,6 @@ def calculate_phi(wcr_field_star, ct_field_star):
 def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     #Run Gaussian filter before calculating phi
 
-
     if filter_size == 0:
         return calculate_phi(wcr_field_star, ct_field_star)
     
@@ -157,8 +160,8 @@ def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,
 def get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_size):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, f_exclude_boundary(filter_size))
     wcr_field, ct_field=calculate_fields(data_temp, data_reaction, TB, TU)
-    wcr_bar_field = gaussian_filter(wcr_field, sigma=sigma_value(filter_sizes[i]), mode='reflect')/WCT_NORM
-    ct_bar_field = gaussian_filter(ct_field, sigma=sigma_value(filter_sizes[i]), mode='reflect')/NCT_NORM
+    wcr_bar_field = gaussian_filter(wcr_field, sigma=sigma_value(filter_size), mode='reflect')/WCT_NORM
+    ct_bar_field = gaussian_filter(ct_field, sigma=sigma_value(filter_size), mode='reflect')/NCT_NORM
     return wcr_bar_field, ct_bar_field
 
 def create_custom_cmap():
@@ -220,6 +223,39 @@ def overlay_fields(phi, img_path, x, y, filename='overlay.pdf'):
 
     plt.show()
 
+
+def load_phi_field_NN_new(epoch):
+  filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+          #load NN
+  model_path=r"Models_During_Training\\new_model_discretized{}.pt".format(epoch)
+  model = torch.load(model_path)
+
+  #save values for all fields in B1
+  for i in range(len(filter_sizes)):
+      wcr_bar_field, ct_bar_field=get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_sizes[i])
+      wcr_bar_plus_flat=wcr_bar_field.flatten()
+      ct_bar_plus_flat=ct_bar_field.flatten()
+      phi_NN_field_flat=[]
+      for j in range(len(wcr_bar_plus_flat)):
+          inputs=[wcr_bar_plus_flat[j], ct_bar_plus_flat[j], filter_sizes[i]/2]
+          inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
+          phi_pred=model(inputs_tensor,training=False)
+          phi_NN_field_flat.append(phi_pred.detach().numpy())
+      phi_NN_field = np.array(phi_NN_field_flat).reshape(wcr_bar_field.shape)
+
+      folder_path = f"Prediction Plots\\Epoch{epoch}"  # Replace 'path/to/your/new_folder' with the desired folder path
+
+# Check if the folder already exists
+      if not os.path.exists(folder_path):
+        # If it doesn't exist, create the folder
+        os.makedirs(folder_path)
+      
+      plt.imshow(phi_NN_field, cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()])
+      plt.colorbar()
+      plt.savefig(f"Prediction Plots\\Epoch{epoch}\\Filter{filter_sizes[i]}.png")
+      plt.close()
+      np.save(f"NewNNFields\\Field_Filter_{filter_sizes[i]}", phi_NN_field)
+
 if __name__ == '__main__':
     # Usage of functions
 
@@ -236,37 +272,15 @@ if __name__ == '__main__':
     ax[1].imshow(phi_0th_order, cmap=white_jet)
     plt.show()
     """
+
+    load_phi_field_NN_new(40)
     
-    data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
-    data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
+    """    
+    
     #Plot phi zeroth from filter size 0.5 to 2.0, in the same figure
-    filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+
     fig, ax = plt.subplots(1, len(filter_sizes), figsize=(20, 10))
 
-    #get data for new NN
-
-
-    #load NN
-    model = torch.load("new_model_discretized.pt")
-
-    #save values for all fields in B1
-    for i in range(len(filter_sizes)):
-        wcr_bar_field, ct_bar_field=get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_sizes[i])
-        wcr_bar_plus_flat=wcr_bar_field.flatten()
-        ct_bar_plus_flat=ct_bar_field.flatten()
-        phi_NN_field_flat=[]
-        for j in range(len(wcr_bar_plus_flat)):
-            inputs=[wcr_bar_plus_flat[j], ct_bar_plus_flat[j], filter_sizes[i]/2]
-            inputs_tensor=torch.tensor(inputs, dtype=torch.float64)
-            phi_pred=model(inputs_tensor,training=False)
-            phi_NN_field_flat.append(phi_pred.detach().numpy())
-        phi_NN_field = np.array(phi_NN_field_flat).reshape(wcr_bar_field.shape)
-        np.save(f"NewNNFields\\Field_Filter_{filter_sizes[i]}", phi_NN_field)
-        print(filter_sizes[i])
-
-
-
-    """
     for i, filter_size in enumerate(filter_sizes):
         #Apply gaussian filter to phi_0th_order
         sigma_val = sigma_value(filter_size)
