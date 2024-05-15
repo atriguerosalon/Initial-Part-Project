@@ -67,7 +67,7 @@ for filter_size in filter_sizes:
     plt.legend()
 
                 
-    plt.title(f'Characteristic Direction Identification, filter size: {filter_size}')
+    #plt.title(f'Characteristic Direction Identification, filter size: {filter_size}')
     # Save the plot 
     plt.savefig(f'./Symbolic_Regression_for_NN/characteristic_direction_{filter_size}_loop.pdf')
     plt.close()
@@ -79,7 +79,7 @@ plt.figure()
 plt.plot(filter_sizes, principal_directions, marker='o')
 plt.xlabel('Filter Size')
 plt.ylabel('Principal Direction Angle (degrees)')
-plt.title('dPrincipal Direction Angle vs. Filter Size')
+#plt.title('Principal Direction Angle vs. Filter Size')
 plt.savefig(f'./Symbolic_Regression_for_NN/principal_direction_angles.pdf')
 plt.show()
 
@@ -89,6 +89,6 @@ plt.figure()
 plt.plot(filter_sizes, variance_explained_list, marker='o')
 plt.xlabel('Filter Size')
 plt.ylabel('Variance Explained (%)')
-plt.title('Variance Explained by Principal Direction vs. Filter Size')
+#plt.title('Variance Explained by Principal Direction vs. Filter Size')
 plt.savefig(f'./Symbolic_Regression_for_NN/variance_explained.pdf')
 plt.show()
