@@ -68,7 +68,7 @@ plt.show()
 plt.scatter(x_data[::-1], y_data, label='Neural Network Data', color='blue', s=5)
 plt.plot(x_fit[::-1], y_fit, label=f'Fitted Sigmoid\nβ={beta_opt:.2f}, $x_0$={x0_opt:.2f}', color='red')
 # Add rsq to the plot
-plt.text(145, 0.65, f'R² = {r_squared:.8f}', fontsize=label_size, ha='center')
+plt.text(145, 0.65, f'R² = {r_squared:.4f}', fontsize=label_size, ha='center')
 
 # Set width of the contour lines to 1.5
 plt.gca().spines['top'].set_linewidth(1.5)
@@ -87,5 +87,5 @@ plt.xlabel('Input Feature (Aligned Axis)', fontsize=label_size)
 plt.ylabel('$\\overline{\\Phi}$', fontsize=label_size)
 
 # Save the plot
-plt.savefig(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_{filter_size}.pdf', bbox_inches='tight', pad_inches=0)
+plt.savefig(f'./Symbolic_Regression_for_NN/char_line_sigmoid_fitted_{filter_size}.pdf', bbox_inches='tight', pad_inches=0.1)
 plt.show()

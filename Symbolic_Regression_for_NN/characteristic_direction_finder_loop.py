@@ -75,8 +75,8 @@ for filter_size in filter_sizes:
     cbar.ax.tick_params(labelsize=label_size)  # Set tick label size
 
 
-    plt.xlabel('$\\overline{\\omega}_{c_{T}}^*$', fontsize=label_size)
-    plt.ylabel('$| \\nabla \\tilde{c}_{T}|^*$', fontsize=label_size)
+    plt.xlabel('$\\overline{\\omega}_{c_{T}}^+$', fontsize=label_size)
+    plt.ylabel('$| \\nabla \\tilde{c}_{T}|^+$', fontsize=label_size)
     plt.xticks(fontsize=label_size)	
     plt.yticks(fontsize=label_size)
     plt.legend(loc='best', fontsize=label_size-1.5, edgecolor='black', fancybox=False).get_frame().set_linewidth(1)
