@@ -4,6 +4,8 @@ from scipy.ndimage import gaussian_filter
 from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary	
 import os
 
+# MISSING: Add the path to the folder containing the data files
+# MAKE SURE TO CITE THE ADDED INFORMATION FOR THE 0th ORDER FILTERING
 # Label size
 label_size = 18
 
