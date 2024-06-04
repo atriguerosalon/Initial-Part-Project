@@ -7,6 +7,7 @@ from scipy.ndimage import gaussian_filter
 from matplotlib.colors import LinearSegmentedColormap
 import torch
 import os
+# import favre_filtering
 
 # Constants
 #LOOK INTO MAKING THSE AS INPUT VARIABLES IN THE FUTURE!!!
@@ -162,7 +163,7 @@ def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     phi_0th = gaussian_filter(phi_0th, sigma=sigma_value)
     return phi_0th
 
-def filename_to_0th_order_field(data_path_temp, data_path_reaction, filter_size):
+def filename_to_0th_order_fields(data_path_temp, data_path_reaction, filter_size):
     filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
     idx = filter_sizes.index(filter_size)
     # Filter sizes 0(DNS) 0.5dth 0.75dth 1dth 1.25dth 1.5dth 1.75dth 2dth
@@ -175,17 +176,21 @@ def filename_to_0th_order_field(data_path_temp, data_path_reaction, filter_size)
     B1_DTH = 0.001290490
     B1_DU = 0.2219636
     B1_SL = 1.658573555
-    B1_TU = 1500.000 
-    B1_TB = 1623.47
+    B1_TU_case = 1500.000 
+    B1_TB_case = 1623.47
 
-    MAX_WCT = B1_MAX_WCT[idx]
-    MAX_NCT = B1_MAX_NCT[idx]
+    MAX_WCT_case = B1_MAX_WCT[idx]
+    MAX_NCT_case = B1_MAX_NCT[idx]
+
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, f_exclude_boundary(filter_size))
-    wcr_field, ct_field = calculate_fields(data_temp, data_reaction, B1_TB, B1_TU)
-    wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCT, MAX_NCT)
-    phi_0th_order_unfiltered = calculate_phi(wcr_field_star, ct_field_star)
+    wcr_field, ct_field = calculate_fields(data_temp, data_reaction, B1_TB_case, B1_TU_case)
+
+    wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCT_case, MAX_NCT_case)
+    wcr_field_star_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value(filter_size))
+    phi_0th_order_unfiltered = calculate_phi(wcr_field_star_filtered, ct_field_star)
+
     phi_0th_order = gaussian_filter(phi_0th_order_unfiltered, sigma=sigma_value(filter_size))
-    return phi_0th_order
+    return wcr_field_star, ct_field_star, phi_0th_order
 
 def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0), MAX_WCT=MAX_WCT, MAX_CT=MAX_CT, TB=TB, TU=TU):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, exclude_boundaries)
