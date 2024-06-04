@@ -77,8 +77,7 @@ def phi_field_NN_new(filter_size):
    return np.flipud(np.load(f"NewNNFields\\Field_Filter_{filter_size}.npy"))
 
 def phi_field_0th(filter_size):
-  exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
-  _, _, phi_field_0th = filename_to_0th_order_fields(data_path_temp_filtered, data_path_reaction_filtered, (exclude_boundaries_L, exclude_boundaries_R))
+  _, _, phi_field_0th = filename_to_0th_order_fields(data_path_temp_filtered, data_path_reaction_filtered, filter_size)
   unfiltered_0th = np.flipud(phi_field_0th)
   return unfiltered_0th
 
