@@ -17,14 +17,13 @@ x = np.arange(0, lx + dx, dx)
 y = np.arange(0, ly + dy, dy)
 TU = 1500.000  # K (reactant temperature)
 TB = 1623.47  # K (burn temperature)
-MAX_WCR = 1996.8891
+MAX_WCT = 1996.8891
 MAX_CT = 3931.0113
 DTH=0.0012904903  # m
 DU=0.2219636  # kg/m^3
 SL= 1.6585735551  # m/s
-WCT_NORM = DU*SL/DTH
-NCT_NORM = 1/DTH
-
+WCT_NORM_FACTOR = DU*SL/DTH
+NCT_NORM_FACTOR = 1/DTH
 filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
 fwidth_n = np.array([0, 25, 37, 49, 62, 74, 86, 99])
 
@@ -118,8 +117,8 @@ def calculate_fields(data_temp, data_reaction, TB, TU):
     ct_field = data_temp / (TB - TU)
     return wcr_field, ct_field
 
-def normalize_fields(wcr_field, ct_field, max_wcr, max_ct):
-    wcr_field_star = wcr_field / max_wcr
+def normalize_fields(wcr_field, ct_field, max_wct, max_ct):
+    wcr_field_star = wcr_field / max_wct
     ct_field_star = ct_field / max_ct
     return wcr_field_star, ct_field_star
 
@@ -130,7 +129,20 @@ def calculate_phi(wcr_field_star, ct_field_star):
 
 def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     #Run Gaussian filter before calculating phi
+    # Filter sizes 0(DNS) 0.5dth 0.75dth 1dth 1.25dth 1.5dth 1.75dth 2dth
+    B1_MAX_WCT = [1996.8891465, 1526.9898031, 1291.2278508, 1109.90621188, 1000.3838916, 
+                  956.39128432, 907.51922871, 859.85215504]
+    
+    B1_MAX_NCT = [3931.0113, 1337.4787422, 915.33373068, 672.59978870, 517.83026364,
+                  422.29734194, 352.81715368, 297.16564086]
 
+    B1_DTH = 0.001290490
+    B1_DU = 0.2219636
+    B1_SL = 1.658573555
+    B1_TU = 1500.000 
+    B1_TB = 1623.47
+
+    
     if filter_size == 0:
         return calculate_phi(wcr_field_star, ct_field_star)
     
@@ -150,25 +162,47 @@ def calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size):
     phi_0th = gaussian_filter(phi_0th, sigma=sigma_value)
     return phi_0th
 
-def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0)):
+def filename_to_0th_order_field(data_path_temp, data_path_reaction, filter_size):
+    filter_sizes=[0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.00]
+    idx = filter_sizes.index(filter_size)
+    # Filter sizes 0(DNS) 0.5dth 0.75dth 1dth 1.25dth 1.5dth 1.75dth 2dth
+    B1_MAX_WCT = [1996.8891465, 1526.9898031, 1291.2278508, 1109.90621188, 1000.3838916, 
+                  956.39128432, 907.51922871, 859.85215504]
+    
+    B1_MAX_NCT = [3931.0113, 1337.4787422, 915.33373068, 672.59978870, 517.83026364,
+                  422.29734194, 352.81715368, 297.16564086]
+
+    B1_DTH = 0.001290490
+    B1_DU = 0.2219636
+    B1_SL = 1.658573555
+    B1_TU = 1500.000 
+    B1_TB = 1623.47
+
+    MAX_WCT = B1_MAX_WCT[idx]
+    MAX_NCT = B1_MAX_NCT[idx]
+    data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, f_exclude_boundary(filter_size))
+    wcr_field, ct_field = calculate_fields(data_temp, data_reaction, B1_TB, B1_TU)
+    wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCT, MAX_NCT)
+    phi_0th_order_unfiltered = calculate_phi(wcr_field_star, ct_field_star)
+    phi_0th_order = gaussian_filter(phi_0th_order_unfiltered, sigma=sigma_value(filter_size))
+    return phi_0th_order
+
+def filename_to_field(data_path_temp, data_path_reaction, exclude_boundaries=(0,0), MAX_WCT=MAX_WCT, MAX_CT=MAX_CT, TB=TB, TU=TU):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, exclude_boundaries)
     wcr_field, ct_field = calculate_fields(data_temp, data_reaction, TB, TU)
-    wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCR, MAX_CT)
+    wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCT, MAX_CT)
     phi = calculate_phi(wcr_field_star, ct_field_star)
     return wcr_field_star, ct_field_star, phi
 
-def get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_size):
+def get_non_dimensionalized_fields(data_path_temp, data_path_reaction, filter_size, TB=TB, TU=TU, WCT_NORM_FACTOR=WCT_NORM_FACTOR, NCT_NORM_FACTOR=NCT_NORM_FACTOR):
     data_temp, data_reaction = load_data(data_path_temp, data_path_reaction, f_exclude_boundary(filter_size))
     wcr_field, ct_field=calculate_fields(data_temp, data_reaction, TB, TU)
-    wcr_bar_field = gaussian_filter(wcr_field, sigma=sigma_value(filter_size), mode='reflect')/WCT_NORM
-    ct_bar_field = gaussian_filter(ct_field, sigma=sigma_value(filter_size), mode='reflect')/NCT_NORM
+    wcr_bar_field = gaussian_filter(wcr_field, sigma=sigma_value(filter_size), mode='reflect')/WCT_NORM_FACTOR
+    ct_bar_field = gaussian_filter(ct_field, sigma=sigma_value(filter_size), mode='reflect')/NCT_NORM_FACTOR
     return wcr_bar_field, ct_bar_field
 
-def create_custom_cmap():
-    res = 1024
-    starting_val = 0.2
+def create_custom_cmap(res=1024, starting_val=0.2):
     jet = plt.cm.get_cmap('jet', res)
-
     # Modify the colormap to set values below 0.2 to white
     newcolors = jet(np.linspace(0, 1, res))
     newcolors[:int(res*starting_val), :] = np.array([1, 1, 1, 1])  # RGBA for white color
