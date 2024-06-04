@@ -46,7 +46,7 @@ data_path_reaction_filtered ="Data_new_NN\\dataset_slice_B1_TS80\\bar-wtemp-slic
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
 wcr_field_filtered, ct_field_filtered, phi_res_filtered = filename_to_0th_order_fields(data_path_temp_filtered, data_path_reaction_filtered, filter_size)
 #wcr_field_filtered, ct_field_filtered = load_data(data_path_temp_filtered, data_path_reaction_filtered, exclude_boundary)
-phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
+#phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
 
 #Create custom color map
 white_jet = create_custom_cmap()

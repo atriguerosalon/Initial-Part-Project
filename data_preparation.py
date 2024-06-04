@@ -186,8 +186,7 @@ def filename_to_0th_order_fields(data_path_temp, data_path_reaction, filter_size
     wcr_field, ct_field = calculate_fields(data_temp, data_reaction, B1_TB_case, B1_TU_case)
 
     wcr_field_star, ct_field_star = normalize_fields(wcr_field, ct_field, MAX_WCT_case, MAX_NCT_case)
-    wcr_field_star_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value(filter_size))
-    phi_0th_order_unfiltered = calculate_phi(wcr_field_star_filtered, ct_field_star)
+    phi_0th_order_unfiltered = calculate_phi(wcr_field_star, ct_field_star)
 
     phi_0th_order = gaussian_filter(phi_0th_order_unfiltered, sigma=sigma_value(filter_size))
     return wcr_field_star, ct_field_star, phi_0th_order

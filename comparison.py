@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from scipy.ndimage import gaussian_filter
-from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value, exclude_boundaries
+from data_preparation import filename_to_field, calculate_phi_0th_order, sigma_value, exclude_boundaries, filename_to_0th_order_fields
 import scipy as sp
 import torch
 
@@ -27,6 +27,9 @@ grid_size_mm=10
 # Data paths
 data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
+
+data_path_temp_filtered = "Ref_0th_Fields\\tilde-nablatemp-slice-B1-0000080000-049.raw"
+data_path_reaction_filtered ="Data_new_NN\\dataset_slice_B1_TS80\\bar-wtemp-slice-B1-0000080000-049.raw"
 
 fwidth_n = np.array([25, 37, 49, 62, 74, 86, 99])
 
@@ -75,9 +78,8 @@ def phi_field_NN_new(filter_size):
 
 def phi_field_0th(filter_size):
   exclude_boundaries_L, exclude_boundaries_R = exclude_boundary(filter_size)
-  wcr_field_star, ct_field_star, _ = filename_to_field(data_path_temp, data_path_reaction, (exclude_boundaries_L, exclude_boundaries_R))
-  unfiltered_0th= calculate_phi_0th_order(wcr_field_star, ct_field_star, filter_size)
-  unfiltered_0th = np.flipud(unfiltered_0th)
+  _, _, phi_field_0th = filename_to_0th_order_fields(data_path_temp_filtered, data_path_reaction_filtered, (exclude_boundaries_L, exclude_boundaries_R))
+  unfiltered_0th = np.flipud(phi_field_0th)
   return unfiltered_0th
 
 plt.rcParams['axes.linewidth'] = 1.5
@@ -203,8 +205,8 @@ def plot_comparison_graphs():
     vmax_val=np.array([phi_field_res(filter_sizes[i]), phi_field_NN_new(filter_sizes[i]), phi_field_NN_old(filter_sizes[i])]).max()
     print(phi_field_res(filter_sizes[i]).max(), phi_field_NN_new(filter_sizes[i]).max(), phi_field_NN_old(filter_sizes[i]).max())
     axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
-    axs[2,i].imshow(np.flipud(phi_field_NN_new(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
-    axs[3,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[2,i].imshow(np.flipud(phi_field_NN_old(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
+    axs[3,i].imshow(np.flipud(phi_field_0th(filter_sizes[i])), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()], vmax=vmax_val)
 
     #colorbar tings
     tick_pos=np.arange(0, np.floor(phi_field_res(filter_sizes[i]).max()*10)/10+0.05, 0.05)
@@ -353,7 +355,7 @@ def plot_theoretical_change_new_NN(filter_size1, filter_size2):
 #compare_filter_sizes() #plot here
 
 #remember that before applying this, you need to run data_prep
-#plot_comparison_graphs() #plot here
+plot_comparison_graphs() #plot here
 
 #comparison_plot('MSE') #plot here
 #comparison_plot("Pearson")
