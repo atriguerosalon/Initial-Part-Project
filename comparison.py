@@ -215,10 +215,10 @@ def plot_comparison_graphs():
     plt.colorbar(mappable=axs[1,i].imshow(phi_field_res(filter_sizes[i]), cmap='jet', extent =[x.min(), x.max(), y.min(), y.max()]), cax=axs[0,i], orientation='horizontal', fraction=0.046*len(x)/384, pad=0.4)
     axs[0,i].set_xticks(tick_pos, labels=tick_labels, minor=False, fontsize=16)
     axs[0,i].xaxis.set_ticks_position('top')
-  
+
   #title, fig saving, and showing
   fig.suptitle("$\\Delta /\\delta_{th}$",x=0.535, y=0.045, fontsize=22)
-  plt.savefig("Graph Comparison")
+  plt.savefig("Graph Comparison.pdf")
   plt.show()
 
 
