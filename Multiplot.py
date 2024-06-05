@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
-from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary	
+from data_preparation import filename_to_field, create_custom_cmap, f_exclude_boundary, filename_to_0th_order_fields, load_data
 import os
 
 # MISSING: Add the path to the folder containing the data files
@@ -41,26 +41,13 @@ data_path_temp = 'nablatemp-slice-B1-0000080000.raw'
 data_path_reaction = 'wtemp-slice-B1-0000080000.raw'
 
 data_path_temp_filtered = "Ref_0th_Fields\\tilde-nablatemp-slice-B1-0000080000-049.raw"
-data_path_reaction_filtered ="Ref_0th_Fields\\zeroth-wtemp-slice-B1-0000080000-049.raw"
+data_path_reaction_filtered ="Data_new_NN\\dataset_slice_B1_TS80\\bar-wtemp-slice-B1-0000080000-049.raw"
 # Load data, calculate and normalize fields, and calculate phi
 wcr_field_star, ct_field_star, phi = filename_to_field(data_path_temp, data_path_reaction, exclude_boundary)
-wcr_field_filtered, ct_field_filtered, phi_res_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value), gaussian_filter(ct_field_star, sigma=sigma_value), gaussian_filter(phi, sigma=sigma_value)
+wcr_field_filtered, ct_field_filtered, phi_res_filtered = filename_to_0th_order_fields(data_path_temp_filtered, data_path_reaction_filtered, filter_size)
+#wcr_field_filtered, ct_field_filtered = load_data(data_path_temp_filtered, data_path_reaction_filtered, exclude_boundary)
+phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
 
-# Apply Gaussian filters
-#wcr_field_filtered = gaussian_filter(wcr_field_star, sigma=sigma_value)
-#ct_field_filtered = gaussian_filter(ct_field_star, sigma=sigma_value)
-#phi_res_filtered = gaussian_filter(phi, sigma=sigma_value)
-
-'''
-#Print maximum wcr_field_filtered value
-print(f"Maximum value in wcr_field_filtered: {np.max(wcr_field_filtered)}")
-
-#Print maximum ct_field_filtered value
-print(f"Maximum value in ct_field_filtered: {np.max(ct_field_filtered)}")
-
-#Print maximum phi_res_filtered value
-print(f"Maximum value in phi_res_filtered: {np.max(phi_res_filtered)}")
-'''
 #Create custom color map
 white_jet = create_custom_cmap()
 
@@ -93,16 +80,18 @@ max_phi = np.max(phi)
 #axs[0, 2].set_title('(c) Φres')
 
 #maximum value in filtered fields
-max_filtered_value = max(np.max(wcr_field_filtered), np.max(ct_field_filtered), np.max(phi_res_filtered))
-print(f"Maximum value in filtered fields: {max_filtered_value}")
+max_filtered_wcr = np.max(wcr_field_filtered)
+max_filtered_ct = np.max(ct_field_filtered)
+max_filtered_phi = np.max(phi_res_filtered)
+print(f"Maximum value in filtered fields: {max_filtered_wcr}, {max_filtered_ct}, {max_filtered_phi}")
 # Plotting the filtered fields
-axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=max_wcr)
+axs[1, 0].imshow(wcr_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[1, 0].set_title('(d) ωcT* filtered')
 
-axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=max_ct) #ask alejandro
+axs[1, 1].imshow(ct_field_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[1, 1].set_title('(e) |∇cT|* filtered')
 
-axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=max_phi)
+axs[1, 2].imshow(phi_res_filtered, cmap=white_jet, extent=extent_mm, vmin=0, vmax=1)
 #axs[1, 2].set_title('(f) Φres filtered')
 
 # Set the labels and titles as per your requirement
