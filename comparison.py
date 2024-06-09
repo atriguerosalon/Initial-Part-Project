@@ -180,10 +180,10 @@ def plot_comparison_graphs():
   for i in range(len(filter_sizes)):
      width_ratios.append(len(get_boundaries(filter_sizes[i])[0]))
   fig, axs=plt.subplots(4,len(filter_sizes), gridspec_kw={'height_ratios': height_ratios, 'width_ratios': width_ratios})
-  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN, new}$","$\\overline{\\Phi}_{NN,lit}$"]
+  row_titles=["$\\overline{\\Phi}_{res}$","$\\overline{\\Phi}_{NN}$","$\\overline{\\Phi}_{0th}$"]
   #setting y-axis labels and row titles (type of analysis conducted)
   for i in range(len(row_titles)):
-    axs[i+1,0].text(-10, 4.5, row_titles[i], fontsize=22, fontfamily='serif')
+    axs[i+1,0].text(-8, 4.5, row_titles[i], fontsize=22, fontfamily='serif')
     axs[i+1,0].axes.set_yticks([0,2,4,6,8,10], labels=[0,2,4,6,8,10], fontsize=14)
     axs[i+1,0].axes.set_ylabel('y (mm)', labelpad=-0.75, fontsize=rc_textsize)
   #hiding unnecessary axes
@@ -312,15 +312,16 @@ def comparison_plot(MSE_or_Pearson):
       y_newNN.append(calculate_MSE(i, 'newNN'))
   else:
     print(f"comparison_plot only takes \'MSE\' or \'Pearson\', not {MSE_or_Pearson}")
-  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="$NN_{lit}$/res", linewidth=1.5, rasterized=True)
+  plt.vlines(filter_sizes, min(min(y_NN), min(y_0th), min(y_newNN))-0.05, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
+  plt.hlines([0], 0, 2.5,colors='black', alpha=0.5, linewidth=1.5, linestyles='dashed')
+  plt.plot(filter_sizes,y_NN, 'k', marker='o', markersize=8,label="$NN$/res", linewidth=1.5, rasterized=True)
   plt.plot(filter_sizes, y_newNN, 'r', marker='o', markersize=8, label='$NN_{new}$/res', linewidth=1.5, rasterized=True)
   plt.plot(filter_sizes, y_0th, marker='o', markersize=8, label='0th/res', linewidth=1.5, rasterized=True)
-  plt.vlines(filter_sizes, 0, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)), colors='gray', linestyles='dashed', alpha=0.3, linewidth=1.5)
   plt.xlim(0.35, 2.15)
   if MSE_or_Pearson=='MSE':
-    plt.ylim(0, 1.2*max(max(y_NN), max(y_0th), max(y_newNN)))
-  elif MSE_or_Pearson == 'Pearson':
     plt.ylim(0, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)))
+  elif MSE_or_Pearson == 'Pearson':
+    plt.ylim(min(min(y_NN), min(y_0th), min(y_newNN))-0.05, 1.05*max(max(y_NN), max(y_0th), max(y_newNN)))
   plt.xticks([i/4 for i in range(2,9)])
   plt.tick_params(axis='both', which='major', direction='in', right=True, labelsize=15)
   plt.xlabel("$\\Delta/\\delta_{th,norm}$", fontsize=18)
@@ -349,13 +350,16 @@ def plot_theoretical_change_new_NN(filter_size1, filter_size2):
   plt.suptitle("$\phi_{NN}$("+str(filter_size2)+")-$\phi_{NN}$("+str(filter_size1)+")")
   plt.show()
 
+def plot_vals():
+   vals=np.load("Phi_NN_Data\Phi_NN_0.5.npy")
+   
 #run the functions here:
 
 #compare_filter_sizes() #plot here
 
 #remember that before applying this, you need to run data_prep
-plot_comparison_graphs() #plot here
+#plot_comparison_graphs() #plot here
 
 #comparison_plot('MSE') #plot here
-#comparison_plot("Pearson")
+comparison_plot("Pearson")
 #plot_theoretical_change_new_NN(0.5, 2)
