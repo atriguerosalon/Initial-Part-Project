@@ -133,8 +133,8 @@ def scatterplots(filter_size, ax2=None):
     ax2.scatter(x, y, s=scatter_s, color='k', alpha=0.15, rasterized=True)
     print("Made it here, post scatter")
     ax2.plot([0, 1.5], [0, 1.5], linestyle='--', marker='', c='midnightblue', lw=lw)
-    ax2.set_xlim(0, max(x)*1.06)
-    ax2.set_ylim(0, max(y)*1.06)
+    ax2.set_xlim(0, max(max(x), max(y))*1.06)
+    ax2.set_ylim(0, max(max(x), max(y))*1.06)
     ax2.set_ylabel("$\\overline{\\Phi}_{NN}$", fontsize=label_size)
     ax2.set_xlabel("$\\overline{\\Phi}_{res}$", fontsize=label_size)
     ax2.tick_params(axis='both', labelsize=18)  # Increase tick label size
@@ -355,11 +355,11 @@ def plot_vals():
    
 #run the functions here:
 
-#compare_filter_sizes() #plot here
+compare_filter_sizes() #plot here
 
 #remember that before applying this, you need to run data_prep
 #plot_comparison_graphs() #plot here
 
 #comparison_plot('MSE') #plot here
-comparison_plot("Pearson")
+#comparison_plot("Pearson")
 #plot_theoretical_change_new_NN(0.5, 2)
